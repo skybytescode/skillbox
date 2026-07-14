@@ -1,0 +1,362 @@
+[
+  {
+    "id": "linux-1",
+    "category": "Linux",
+    "difficulty": "easy",
+    "question": "Which command displays the current working directory?",
+    "options": ["cwd", "pwd", "dir", "whereami"],
+    "answer": 1,
+    "explanation": "`pwd` (print working directory) outputs the absolute path of the current directory."
+  },
+  {
+    "id": "linux-2",
+    "category": "Linux",
+    "difficulty": "easy",
+    "question": "What does the permission string `rwxr-xr--` grant to the group?",
+    "options": ["read, write, execute", "read and execute", "read only", "write and execute"],
+    "answer": 1,
+    "explanation": "The middle triplet `r-x` is the group's permissions: read and execute, no write."
+  },
+  {
+    "id": "linux-3",
+    "category": "Linux",
+    "difficulty": "medium",
+    "question": "Which signal does `kill` send by default when no signal is specified?",
+    "options": ["SIGKILL (9)", "SIGTERM (15)", "SIGHUP (1)", "SIGSTOP (19)"],
+    "answer": 1,
+    "explanation": "`kill` sends SIGTERM (15) by default, allowing the process to shut down gracefully."
+  },
+  {
+    "id": "linux-4",
+    "category": "Linux",
+    "difficulty": "medium",
+    "question": "Which systemd command enables a service to start on boot?",
+    "options": ["systemctl start <svc>", "systemctl enable <svc>", "systemctl boot <svc>", "service <svc> on"],
+    "answer": 1,
+    "explanation": "`systemctl enable` creates the symlinks so the unit starts at boot; `start` only starts it now."
+  },
+  {
+    "id": "linux-5",
+    "category": "Linux",
+    "difficulty": "hard",
+    "question": "What does `chmod 4755 file` set in addition to rwxr-xr-x?",
+    "options": ["The sticky bit", "The setgid bit", "The setuid bit", "An ACL entry"],
+    "answer": 2,
+    "explanation": "The leading `4` sets the setuid bit, so the file runs with the owner's privileges."
+  },
+  {
+    "id": "bash-1",
+    "category": "Bash",
+    "difficulty": "easy",
+    "question": "How do you make a shell script executable?",
+    "options": ["chmod +x script.sh", "run script.sh", "bash --exec script.sh", "export script.sh"],
+    "answer": 0,
+    "explanation": "`chmod +x` adds the execute permission so the script can be run directly."
+  },
+  {
+    "id": "bash-2",
+    "category": "Bash",
+    "difficulty": "medium",
+    "question": "What does `$?` contain in a bash script?",
+    "options": ["The current PID", "The last command's exit code", "The number of arguments", "The script name"],
+    "answer": 1,
+    "explanation": "`$?` holds the exit status of the most recently executed command (0 = success)."
+  },
+  {
+    "id": "bash-3",
+    "category": "Bash",
+    "difficulty": "medium",
+    "question": "Which redirection sends both stdout and stderr to a file in bash?",
+    "options": ["> file", "2> file", "&> file", "| file"],
+    "answer": 2,
+    "explanation": "`&> file` redirects both standard output and standard error to the file."
+  },
+  {
+    "id": "bash-4",
+    "category": "Bash",
+    "difficulty": "hard",
+    "question": "What is the effect of `set -euo pipefail` at the top of a script?",
+    "options": ["Enables debug tracing", "Exit on error, unset vars, and pipeline failures", "Runs the script in parallel", "Disables globbing"],
+    "answer": 1,
+    "explanation": "`-e` exits on error, `-u` errors on unset variables, `pipefail` makes a pipeline fail if any part fails."
+  },
+  {
+    "id": "net-1",
+    "category": "Networking",
+    "difficulty": "easy",
+    "question": "Which port does HTTPS use by default?",
+    "options": ["80", "22", "443", "8080"],
+    "answer": 2,
+    "explanation": "HTTPS traffic uses TCP port 443 by default."
+  },
+  {
+    "id": "net-2",
+    "category": "Networking",
+    "difficulty": "medium",
+    "question": "What is the purpose of a CIDR block like /24?",
+    "options": ["It defines the DNS TTL", "It specifies 24 host bits", "It reserves 24 usable addresses", "It defines a 24-bit network prefix"],
+    "answer": 3,
+    "explanation": "`/24` means the first 24 bits are the network prefix, leaving 8 bits (254 usable hosts)."
+  },
+  {
+    "id": "net-3",
+    "category": "Networking",
+    "difficulty": "medium",
+    "question": "Which tool resolves a domain name to its IP address from the CLI?",
+    "options": ["ping only", "dig", "netstat", "traceroute"],
+    "answer": 1,
+    "explanation": "`dig` queries DNS servers and returns resolution details for a domain."
+  },
+  {
+    "id": "net-4",
+    "category": "Networking",
+    "difficulty": "hard",
+    "question": "In a reverse proxy setup, which header commonly carries the original client IP?",
+    "options": ["Host", "X-Forwarded-For", "Content-Type", "Authorization"],
+    "answer": 1,
+    "explanation": "`X-Forwarded-For` is added by proxies to preserve the originating client IP address."
+  },
+  {
+    "id": "git-1",
+    "category": "Git",
+    "difficulty": "easy",
+    "question": "Which command stages all modified files for commit?",
+    "options": ["git commit -a", "git add .", "git push", "git stage all"],
+    "answer": 1,
+    "explanation": "`git add .` stages all changes in the current directory tree."
+  },
+  {
+    "id": "git-2",
+    "category": "Git",
+    "difficulty": "medium",
+    "question": "What does `git rebase` do compared to `git merge`?",
+    "options": ["Deletes history", "Replays commits on top of another base for a linear history", "Creates a backup branch", "Only works on remotes"],
+    "answer": 1,
+    "explanation": "Rebase reapplies your commits onto a new base, producing a linear history instead of a merge commit."
+  },
+  {
+    "id": "git-3",
+    "category": "Git",
+    "difficulty": "medium",
+    "question": "How do you discard local uncommitted changes to a tracked file?",
+    "options": ["git restore <file>", "git delete <file>", "git reset --hard origin", "git clean <file>"],
+    "answer": 0,
+    "explanation": "`git restore <file>` reverts the working-tree file to the last committed state."
+  },
+  {
+    "id": "docker-1",
+    "category": "Docker",
+    "difficulty": "easy",
+    "question": "Which instruction in a Dockerfile sets the base image?",
+    "options": ["BASE", "FROM", "IMAGE", "SOURCE"],
+    "answer": 1,
+    "explanation": "`FROM` declares the base image for the build stage."
+  },
+  {
+    "id": "docker-2",
+    "category": "Docker",
+    "difficulty": "easy",
+    "question": "What is the difference between an image and a container?",
+    "options": ["Nothing, they are synonyms", "An image is a running instance of a container", "A container is a running instance of an image", "Containers cannot be stopped"],
+    "answer": 2,
+    "explanation": "An image is a read-only template; a container is a running (or stopped) instance created from it."
+  },
+  {
+    "id": "docker-3",
+    "category": "Docker",
+    "difficulty": "medium",
+    "question": "Why use a multi-stage Dockerfile?",
+    "options": ["To run multiple containers", "To reduce final image size by discarding build tools", "To enable multi-arch only", "To add more layers"],
+    "answer": 1,
+    "explanation": "Multi-stage builds copy only the artifacts you need into a slim final image, leaving build tooling behind."
+  },
+  {
+    "id": "docker-4",
+    "category": "Docker",
+    "difficulty": "medium",
+    "question": "Which Dockerfile instruction defines the default command run at container start?",
+    "options": ["RUN", "CMD", "EXPOSE", "ENV"],
+    "answer": 1,
+    "explanation": "`CMD` sets the default command/arguments executed when the container starts."
+  },
+  {
+    "id": "docker-5",
+    "category": "Docker",
+    "difficulty": "hard",
+    "question": "What is the main difference between CMD and ENTRYPOINT?",
+    "options": ["ENTRYPOINT is not overridable at runtime by default and defines the executable", "CMD cannot take arguments", "They are identical", "ENTRYPOINT only works in multi-stage builds"],
+    "answer": 0,
+    "explanation": "ENTRYPOINT defines the executable and is not overridden by `docker run` args (they become CMD arguments)."
+  },
+  {
+    "id": "k8s-1",
+    "category": "Kubernetes",
+    "difficulty": "easy",
+    "question": "What is the smallest deployable unit in Kubernetes?",
+    "options": ["Container", "Pod", "Node", "Deployment"],
+    "answer": 1,
+    "explanation": "A Pod is the smallest deployable unit and can hold one or more tightly coupled containers."
+  },
+  {
+    "id": "k8s-2",
+    "category": "Kubernetes",
+    "difficulty": "medium",
+    "question": "Which object ensures a specified number of pod replicas are running?",
+    "options": ["Service", "ConfigMap", "Deployment (via ReplicaSet)", "Ingress"],
+    "answer": 2,
+    "explanation": "A Deployment manages a ReplicaSet, which keeps the desired number of pod replicas running."
+  },
+  {
+    "id": "k8s-3",
+    "category": "Kubernetes",
+    "difficulty": "medium",
+    "question": "What does a Kubernetes Service of type ClusterIP provide?",
+    "options": ["External load balancer", "A stable internal virtual IP for pods", "Persistent storage", "A DNS zone"],
+    "answer": 1,
+    "explanation": "ClusterIP exposes the Service on an internal virtual IP reachable only inside the cluster."
+  },
+  {
+    "id": "k8s-4",
+    "category": "Kubernetes",
+    "difficulty": "hard",
+    "question": "Which probe determines whether a pod should receive traffic?",
+    "options": ["livenessProbe", "readinessProbe", "startupProbe", "healthProbe"],
+    "answer": 1,
+    "explanation": "The readinessProbe controls whether the pod is added to Service endpoints and receives traffic."
+  },
+  {
+    "id": "k8s-5",
+    "category": "Kubernetes",
+    "difficulty": "hard",
+    "question": "What is the purpose of a Kubernetes namespace?",
+    "options": ["To encrypt secrets", "To provide a virtual cluster / scope for resource isolation", "To schedule nodes", "To store container images"],
+    "answer": 1,
+    "explanation": "Namespaces partition cluster resources into logical scopes for isolation and quota management."
+  },
+  {
+    "id": "cicd-1",
+    "category": "CI/CD",
+    "difficulty": "easy",
+    "question": "What does CI stand for?",
+    "options": ["Container Integration", "Continuous Integration", "Code Inspection", "Central Infrastructure"],
+    "answer": 1,
+    "explanation": "CI means Continuous Integration: frequently merging and automatically testing code changes."
+  },
+  {
+    "id": "cicd-2",
+    "category": "CI/CD",
+    "difficulty": "medium",
+    "question": "What is the main goal of a CI pipeline?",
+    "options": ["Deploy to production only", "Automatically build and test every change", "Replace version control", "Manage user access"],
+    "answer": 1,
+    "explanation": "A CI pipeline automatically builds and tests each change to catch integration problems early."
+  },
+  {
+    "id": "cicd-3",
+    "category": "CI/CD",
+    "difficulty": "medium",
+    "question": "In GitLab CI / GitHub Actions, where are pipeline stages typically defined?",
+    "options": ["In a database", "In a YAML file in the repo", "In the container registry", "In environment variables only"],
+    "answer": 1,
+    "explanation": "Pipelines are declared as YAML (`.gitlab-ci.yml` or `.github/workflows/*.yml`) committed to the repository."
+  },
+  {
+    "id": "cicd-4",
+    "category": "CI/CD",
+    "difficulty": "hard",
+    "question": "What distinguishes Continuous Delivery from Continuous Deployment?",
+    "options": ["Nothing", "Delivery requires a manual approval to release; Deployment is fully automatic", "Deployment is manual; Delivery is automatic", "Delivery skips testing"],
+    "answer": 1,
+    "explanation": "Continuous Delivery keeps a release-ready artifact but needs a manual trigger; Continuous Deployment releases automatically."
+  },
+  {
+    "id": "ansible-1",
+    "category": "Ansible",
+    "difficulty": "easy",
+    "question": "What format are Ansible playbooks written in?",
+    "options": ["JSON", "YAML", "TOML", "XML"],
+    "answer": 1,
+    "explanation": "Ansible playbooks are written in YAML."
+  },
+  {
+    "id": "ansible-2",
+    "category": "Ansible",
+    "difficulty": "medium",
+    "question": "Which feature makes Ansible tasks safe to run repeatedly with the same result?",
+    "options": ["Parallelism", "Idempotency", "Templating", "Vault"],
+    "answer": 1,
+    "explanation": "Idempotent modules only change state when needed, so re-running a playbook is safe."
+  },
+  {
+    "id": "ansible-3",
+    "category": "Ansible",
+    "difficulty": "medium",
+    "question": "What does the Ansible inventory define?",
+    "options": ["The tasks to run", "The managed hosts and groups", "The encryption keys", "The playbook order"],
+    "answer": 1,
+    "explanation": "The inventory lists the managed hosts and organizes them into groups."
+  },
+  {
+    "id": "terraform-1",
+    "category": "Terraform",
+    "difficulty": "easy",
+    "question": "What is Terraform primarily used for?",
+    "options": ["Container orchestration", "Infrastructure as Code provisioning", "Log aggregation", "Configuration of running app code"],
+    "answer": 1,
+    "explanation": "Terraform provisions and manages infrastructure declaratively as code across providers."
+  },
+  {
+    "id": "terraform-2",
+    "category": "Terraform",
+    "difficulty": "medium",
+    "question": "What does the Terraform state file track?",
+    "options": ["Provider credentials", "The mapping between config and real resources", "The CLI version", "The user's shell history"],
+    "answer": 1,
+    "explanation": "The state file maps your configuration to real-world resource IDs and attributes."
+  },
+  {
+    "id": "terraform-3",
+    "category": "Terraform",
+    "difficulty": "hard",
+    "question": "Which command shows the changes Terraform will make without applying them?",
+    "options": ["terraform show", "terraform plan", "terraform state", "terraform validate"],
+    "answer": 1,
+    "explanation": "`terraform plan` produces an execution plan describing what will change, without modifying anything."
+  },
+  {
+    "id": "monitoring-1",
+    "category": "Monitoring",
+    "difficulty": "easy",
+    "question": "Which tool is a widely used open-source metrics and monitoring system?",
+    "options": ["Prometheus", "Nginx", "Redis", "Vault"],
+    "answer": 0,
+    "explanation": "Prometheus is a popular open-source time-series metrics and alerting system."
+  },
+  {
+    "id": "monitoring-2",
+    "category": "Monitoring",
+    "difficulty": "medium",
+    "question": "What is Grafana typically used for?",
+    "options": ["Storing logs", "Visualizing metrics in dashboards", "Building containers", "Managing DNS"],
+    "answer": 1,
+    "explanation": "Grafana visualizes metrics from sources like Prometheus in customizable dashboards."
+  },
+  {
+    "id": "monitoring-3",
+    "category": "Monitoring",
+    "difficulty": "medium",
+    "question": "In observability, what are the 'three pillars'?",
+    "options": ["CPU, RAM, disk", "Metrics, logs, traces", "Build, test, deploy", "Dev, staging, prod"],
+    "answer": 1,
+    "explanation": "The three pillars of observability are metrics, logs, and distributed traces."
+  },
+  {
+    "id": "monitoring-4",
+    "category": "Monitoring",
+    "difficulty": "hard",
+    "question": "What does an SLO define in SRE practice?",
+    "options": ["A hardware limit", "A target level of service reliability (e.g., 99.9% availability)", "A security policy", "A container quota"],
+    "answer": 1,
+    "explanation": "An SLO (Service Level Objective) is a target for a reliability metric, like availability or latency."
+  }
+]

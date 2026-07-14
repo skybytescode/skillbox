@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SkillBox · DevOps Skill Test</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>🚀 SkillBox <span>DevOps Skill Test</span></h1>
+      <p class="tagline">Check your DevOps knowledge — Linux, Docker, Kubernetes, CI/CD and more.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Start screen -->
+    <section id="start" class="card">
+      <h2>Start a quiz</h2>
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category"></select>
+      </div>
+      <div class="field">
+        <label for="count">Number of questions</label>
+        <select id="count">
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="0">All available</option>
+        </select>
+      </div>
+      <button id="startBtn" class="btn primary">Start test</button>
+      <p id="startMeta" class="meta"></p>
+    </section>
+
+    <!-- Quiz screen -->
+    <section id="quiz" class="card hidden">
+      <div class="progress"><div id="progressBar"></div></div>
+      <p id="qMeta" class="meta"></p>
+      <h2 id="qText"></h2>
+      <ul id="options" class="options"></ul>
+      <div class="quiz-nav">
+        <span id="qCounter" class="meta"></span>
+        <button id="nextBtn" class="btn primary" disabled>Next</button>
+      </div>
+    </section>
+
+    <!-- Result screen -->
+    <section id="result" class="card hidden">
+      <h2>Your result</h2>
+      <div id="scoreRing" class="score-ring"><span id="scorePct">0%</span></div>
+      <p id="scoreLine" class="score-line"></p>
+      <div id="review" class="review"></div>
+      <button id="restartBtn" class="btn primary">Try again</button>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Built with Go · Inspired by the Skillbox DevOps profession curriculum · Open source on GitHub</p>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
