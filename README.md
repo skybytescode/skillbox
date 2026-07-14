@@ -9,6 +9,14 @@ instant, graded result with explanations for every question.
 ![Go](https://img.shields.io/badge/Go-1.22%2B-00ADD8?logo=go&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+## 🌐 Live demo
+
+**Try it in your browser: <https://skybytescode.github.io/skillbox/>**
+
+The live version is a fully static, client-side build (hosted on GitHub Pages) that grades
+in the browser. The Go server in this repo is the "real" version with **server-side grading**
+(correct answers are never sent to the browser during a quiz).
+
 ## Topics covered
 
 The question bank spans **10 categories** of the DevOps curriculum:
