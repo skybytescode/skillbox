@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vim Commands Memo · SkillBox</title>
+  <style>
+    :root {
+      --bg: #0f1420; --panel: #171e2e; --panel-2: #1f293d;
+      --text: #e6ecf5; --muted: #93a1bd; --accent: #4f8cff; --accent-2: #2ee6a6;
+      --code: #ffd479; --border: #2a3550; --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -200px, #14321f 0%, var(--bg) 60%);
+      color: var(--text); line-height: 1.55; min-height: 100vh;
+    }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+    .site-header { padding: 40px 0 10px; text-align: center; }
+    .site-header h1 { margin: 0; font-size: 2rem; letter-spacing: -0.5px; }
+    .site-header h1 span { color: var(--accent-2); }
+    .tagline { color: var(--muted); margin: 8px 0 0; }
+    .nav { margin-top: 10px; font-size: .9rem; }
+    .nav a { color: var(--accent); text-decoration: none; margin: 0 6px; }
+    .nav a:hover { text-decoration: underline; }
+
+    .toolbar {
+      position: sticky; top: 0; z-index: 5; padding: 14px 0;
+      background: linear-gradient(180deg, var(--bg) 70%, transparent);
+    }
+    #search {
+      width: 100%; padding: 14px 16px; font-size: 1rem;
+      background: var(--panel-2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 12px;
+    }
+    #search::placeholder { color: var(--muted); }
+    .count { color: var(--muted); font-size: .82rem; margin: 8px 2px 0; }
+
+    .modes-legend {
+      display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+      margin: 6px 0 4px; font-size: .82rem; color: var(--muted);
+    }
+    .modes-legend span { background: var(--panel); border: 1px solid var(--border); padding: 4px 10px; border-radius: 999px; }
+
+    .tier { margin: 26px 0; }
+    .tier-head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 12px; }
+    .tier-head h2 { margin: 0; font-size: 1.25rem; }
+    .badge { font-size: .7rem; padding: 3px 10px; border-radius: 999px; font-weight: 700; background: #16324a; color: #7ec8ff; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+    .cmd {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px;
+    }
+    .cmd code {
+      display: inline-block; font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+      color: var(--code); font-size: .92rem; font-weight: 600;
+      background: #0d1320; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border);
+      word-break: break-word;
+    }
+    .cmd .desc { color: var(--muted); font-size: .88rem; margin-top: 7px; }
+    .cmd.hidden { display: none; }
+    .tier.hidden { display: none; }
+    .noresults { text-align: center; color: var(--muted); padding: 30px; display: none; }
+
+    .site-footer { text-align: center; padding: 30px 0 40px; color: var(--muted); font-size: .82rem; }
+    .site-footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>📝 Vim Commands <span>Memo</span></h1>
+      <p class="tagline">The editor that runs everywhere — a cheat sheet grouped by task.</p>
+      <nav class="nav">
+        <a href="./">🚀 DevOps Quiz</a> ·
+        <a href="linux.html">🐧 Linux Memo</a> ·
+        <a href="linux-theory.html">📖 Linux Theory</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="🔍 Filter commands…  (e.g. 'delete', 'search', 'save')" autocomplete="off" />
+      <p class="count" id="count"></p>
+      <div class="modes-legend">
+        <span>Normal = default mode (Esc)</span>
+        <span>Insert = typing text (i)</span>
+        <span>Visual = selecting (v)</span>
+        <span>Command = <code>:</code> line</span>
+      </div>
+    </div>
+
+    <div id="tiers"></div>
+    <p class="noresults" id="noresults">No commands match your search.</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Tip: run <code>vimtutor</code> in a terminal for a hands-on 30-min lesson · Part of <a href="https://github.com/skybytescode/skillbox">SkillBox</a></p>
+    </div>
+  </footer>
+
+  <script>
+    const DATA = [
+      {
+        tier: "Modes & survival", desc: "If you remember nothing else, remember these.",
+        cmds: [
+          ["Esc", "Return to Normal mode (from any mode)"],
+          ["i", "Insert before the cursor"],
+          ["a", "Insert after the cursor (append)"],
+          ["I / A", "Insert at start / end of the line"],
+          ["o / O", "Open a new line below / above and insert"],
+          [":w", "Write (save) the file"],
+          [":q", "Quit (fails if unsaved changes)"],
+          [":wq  or  ZZ", "Save and quit"],
+          [":q!  or  ZQ", "Quit without saving (discard changes)"],
+          [":x", "Save only if changed, then quit"],
+          ["u", "Undo"],
+          ["Ctrl+r", "Redo"],
+          [".", "Repeat the last change"],
+        ],
+      },
+      {
+        tier: "Movement", desc: "Move without arrow keys — the core of Vim's speed.",
+        cmds: [
+          ["h j k l", "Left, down, up, right"],
+          ["w / W", "Jump to start of next word / WORD"],
+          ["b / B", "Jump back to previous word / WORD"],
+          ["e", "Jump to end of word"],
+          ["0 / ^", "Start of line / first non-blank char"],
+          ["$", "End of line"],
+          ["gg / G", "Go to first / last line"],
+          ["42G  or  :42", "Go to line 42"],
+          ["{ / }", "Previous / next paragraph"],
+          ["Ctrl+d / Ctrl+u", "Scroll half page down / up"],
+          ["Ctrl+f / Ctrl+b", "Scroll full page forward / back"],
+          ["% ", "Jump to matching bracket ()[]{}"],
+          ["f x / t x", "Jump to / just before next 'x' on the line"],
+          ["* / #", "Search next / previous occurrence of word under cursor"],
+        ],
+      },
+      {
+        tier: "Editing", desc: "Change and delete text efficiently.",
+        cmds: [
+          ["x / X", "Delete char under / before cursor"],
+          ["dd", "Delete (cut) the current line"],
+          ["dw / de", "Delete to next word / end of word"],
+          ["d$  or  D", "Delete to end of line"],
+          ["cc / C", "Change whole line / to end of line"],
+          ["cw", "Change to end of word"],
+          ["r x", "Replace single char with 'x'"],
+          ["s / S", "Substitute char / whole line and insert"],
+          ["yy", "Yank (copy) the current line"],
+          ["yw / y$", "Yank word / to end of line"],
+          ["p / P", "Paste after / before cursor"],
+          [">> / <<", "Indent / un-indent the line"],
+          ["J", "Join the next line to this one"],
+          ["~", "Toggle case of the character"],
+        ],
+      },
+      {
+        tier: "Operators + motions", desc: "Vim's grammar: operator + count + motion (e.g. d2w).",
+        cmds: [
+          ["d{motion}", "Delete over a motion (d} = to paragraph end)"],
+          ["c{motion}", "Change over a motion (ci( = inside parens)"],
+          ["y{motion}", "Yank over a motion (yi\" = inside quotes)"],
+          ["2dd / 3yy", "Repeat with a count: delete 2 lines / yank 3"],
+          ["di( / di{", "Delete Inside brackets/braces"],
+          ["ci\" / ci'", "Change Inside quotes"],
+          ["da( ", "Delete Around parens (including them)"],
+          ["dit / cit", "Delete / change Inside an HTML/XML tag"],
+          ["ap / ip", "A paragraph / inner paragraph text object"],
+          ["gU{motion} / gu{motion}", "Uppercase / lowercase over a motion"],
+        ],
+      },
+      {
+        tier: "Visual mode", desc: "Select first, then act.",
+        cmds: [
+          ["v", "Character-wise visual selection"],
+          ["V", "Line-wise visual selection"],
+          ["Ctrl+v", "Block (column) visual selection"],
+          ["gv", "Reselect the last visual selection"],
+          ["o", "Jump to the other end of the selection"],
+          ["d / y / c", "Delete / yank / change the selection"],
+          ["> / <", "Indent / un-indent the selection"],
+          ["=", "Auto-indent the selection"],
+          ["u / U", "Lowercase / uppercase the selection"],
+          ["Ctrl+v then I", "Block-insert text on many lines at once"],
+        ],
+      },
+      {
+        tier: "Search & replace", desc: "Find text and substitute across the file.",
+        cmds: [
+          ["/pattern", "Search forward for pattern"],
+          ["?pattern", "Search backward"],
+          ["n / N", "Next / previous match"],
+          [":noh", "Clear search highlighting"],
+          [":s/old/new/", "Replace first match on the current line"],
+          [":s/old/new/g", "Replace all matches on the line"],
+          [":%s/old/new/g", "Replace all matches in the whole file"],
+          [":%s/old/new/gc", "Replace in file, confirming each"],
+          [":%s/\\<word\\>/x/g", "Replace whole word only"],
+          [":g/pattern/d", "Delete every line matching pattern"],
+        ],
+      },
+      {
+        tier: "Files, buffers, windows", desc: "Work with multiple files and split views.",
+        cmds: [
+          [":e file", "Open (edit) another file"],
+          [":w name", "Save as a new file name"],
+          [":bn / :bp", "Next / previous buffer"],
+          [":ls", "List open buffers"],
+          [":bd", "Close (delete) the current buffer"],
+          [":sp file", "Horizontal split"],
+          [":vsp file", "Vertical split"],
+          ["Ctrl+w w", "Cycle between split windows"],
+          ["Ctrl+w h/j/k/l", "Move to the split in that direction"],
+          ["Ctrl+w q", "Close the current split"],
+          [":tabnew file", "Open a file in a new tab"],
+          ["gt / gT", "Next / previous tab"],
+        ],
+      },
+      {
+        tier: "Handy extras", desc: "Marks, registers, macros, and config.",
+        cmds: [
+          ["ma  then  `a", "Set mark 'a', then jump back to it"],
+          ["\"ayy / \"ap", "Yank / paste using named register 'a'"],
+          ["qa … q", "Record a macro into register 'a' (q to stop)"],
+          ["@a / @@", "Play macro 'a' / replay last macro"],
+          ["10@a", "Run macro 'a' ten times"],
+          [":set number", "Show line numbers (nonumber to hide)"],
+          [":set ic / :set noic", "Ignore case / case-sensitive search"],
+          [":set paste", "Paste raw text without auto-indent mangling"],
+          [":syntax on", "Enable syntax highlighting"],
+          [":help topic", "Open Vim's built-in help"],
+          ["Ctrl+o / Ctrl+i", "Jump to older / newer cursor position"],
+        ],
+      },
+    ];
+
+    const tiersEl = document.getElementById("tiers");
+    const total = DATA.reduce((n, t) => n + t.cmds.length, 0);
+
+    for (const t of DATA) {
+      const section = document.createElement("section");
+      section.className = "tier";
+      section.innerHTML =
+        `<div class="tier-head"><h2>${t.tier}</h2><span class="badge">${t.cmds.length}</span></div>` +
+        (t.desc ? `<p style="color:var(--muted);font-size:.85rem;margin:-6px 0 12px">${t.desc}</p>` : "");
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      for (const [cmd, desc] of t.cmds) {
+        const div = document.createElement("div");
+        div.className = "cmd";
+        div.dataset.text = (cmd + " " + desc).toLowerCase();
+        div.innerHTML = `<code></code><div class="desc"></div>`;
+        div.querySelector("code").textContent = cmd;
+        div.querySelector(".desc").textContent = desc;
+        grid.appendChild(div);
+      }
+      section.appendChild(grid);
+      tiersEl.appendChild(section);
+    }
+
+    const search = document.getElementById("search");
+    const countEl = document.getElementById("count");
+    const noResults = document.getElementById("noresults");
+    countEl.textContent = `${total} commands`;
+
+    search.addEventListener("input", () => {
+      const q = search.value.trim().toLowerCase();
+      let shown = 0;
+      for (const section of document.querySelectorAll(".tier")) {
+        let visibleInSection = 0;
+        for (const card of section.querySelectorAll(".cmd")) {
+          const match = !q || card.dataset.text.includes(q);
+          card.classList.toggle("hidden", !match);
+          if (match) { shown++; visibleInSection++; }
+        }
+        section.classList.toggle("hidden", visibleInSection === 0);
+      }
+      countEl.textContent = q ? `${shown} of ${total} commands` : `${total} commands`;
+      noResults.style.display = shown === 0 ? "block" : "none";
+    });
+  </script>
+</body>
+</html>
