@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Linux Visual Slides · SkillBox</title>
+  <style>
+    :root {
+      --bg: #0f1420; --panel: #171e2e; --panel-2: #1f293d;
+      --text: #e6ecf5; --muted: #93a1bd; --accent: #4f8cff; --accent-2: #2ee6a6;
+      --code: #ffd479; --border: #2a3550;
+      --root: #f9d29a; --root-b: #e0a95e;
+      --blue: #cfe0fb; --blue-b: #8fb4ef; --blue-t: #1b2b4a;
+      --green: #cfeccc; --green-b: #8fcf8a; --green-t: #1c3a1a;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 50% -200px, #1b2540 0%, var(--bg) 60%);
+      color: var(--text);
+    }
+
+    /* Top bar */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 20;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 18px; background: rgba(15,20,32,.85); backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border); font-size: .9rem;
+    }
+    .topbar .brand { font-weight: 700; }
+    .topbar .brand span { color: var(--accent); }
+    .topbar a { color: var(--muted); text-decoration: none; }
+    .topbar a:hover { color: var(--text); }
+
+    /* Deck */
+    .deck { position: absolute; inset: 52px 0 70px; overflow: hidden; }
+    .track { display: flex; height: 100%; transition: transform .45s cubic-bezier(.4,0,.2,1); }
+    .slide {
+      min-width: 100%; height: 100%; padding: 24px; overflow-y: auto;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    }
+    .slide h2 { font-size: clamp(1.4rem, 3.5vw, 2.2rem); margin: 0 0 6px; }
+    .slide h2 .n { color: var(--accent); font-size: .7em; margin-right: 10px; }
+    .slide .sub { color: var(--muted); margin: 0 0 22px; max-width: 640px; }
+    code { font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace; color: var(--code); }
+
+    /* Chips (tree nodes) */
+    .chip {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 8px 12px; border-radius: 8px; font-family: "SF Mono", Menlo, monospace;
+      font-size: .85rem; font-weight: 600; border: 1.5px solid;
+    }
+    .chip.root { background: var(--root); border-color: var(--root-b); color: #5a3d12; }
+    .chip.blue { background: var(--blue); border-color: var(--blue-b); color: var(--blue-t); }
+    .chip.green { background: var(--green); border-color: var(--green-b); color: var(--green-t); }
+
+    /* Filesystem tree */
+    .tree { width: 100%; max-width: 960px; }
+    .tree .down { width: 2px; height: 20px; background: var(--border); margin: 0 auto; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .branch { position: relative; padding-top: 16px; }
+    .branch::before { content: ""; position: absolute; top: 0; left: 50%; width: 2px; height: 16px; background: var(--border); }
+    .subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 22px; }
+    @media (max-width: 640px) { .subgrid { grid-template-columns: 1fr; } }
+    .subcard { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+    .subcard .label { font-family: monospace; color: var(--accent-2); font-weight: 700; margin-bottom: 10px; }
+    .legend { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 18px; font-size: .8rem; color: var(--muted); }
+    .legend b { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 5px; border: 1px solid; }
+
+    /* Architecture layers */
+    .layers { width: 100%; max-width: 560px; }
+    .layer {
+      border-radius: 12px; padding: 16px; margin: 8px 0; border: 1.5px solid var(--border);
+      font-weight: 600;
+    }
+    .layer small { display: block; font-weight: 400; color: var(--muted); margin-top: 4px; font-size: .8rem; }
+    .layer.l1 { background: #10233f; }
+    .layer.l2 { background: #12304a; }
+    .layer.l3 { background: #143a3a; }
+    .layer.l4 { background: #1a3a22; }
+    .layer.l5 { background: #2a2340; }
+
+    /* Permissions anatomy */
+    .perm { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; font-family: monospace; }
+    .perm .grp { border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; min-width: 120px; background: var(--panel); }
+    .perm .grp .bits { font-size: 1.8rem; font-weight: 700; letter-spacing: 4px; }
+    .perm .grp .who { color: var(--muted); font-size: .78rem; margin-top: 6px; text-transform: uppercase; letter-spacing: .5px; }
+    .perm .grp .oct { color: var(--accent-2); font-weight: 700; margin-top: 4px; }
+    .perm .grp.type { background: #22182a; }
+    .perm .grp.u { background: #10233f; }
+    .perm .grp.g { background: #143a3a; }
+    .perm .grp.o { background: #2a2340; }
+
+    /* Flow (boot / pipeline) */
+    .flow { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; justify-content: center; }
+    .step {
+      background: var(--panel); border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 14px 16px; max-width: 170px; position: relative;
+    }
+    .step .t { font-weight: 700; }
+    .step .d { color: var(--muted); font-size: .78rem; margin-top: 5px; }
+    .arrow { display: flex; align-items: center; color: var(--accent); font-size: 1.6rem; padding: 0 6px; }
+    @media (max-width: 720px) { .arrow { transform: rotate(90deg); } .flow { flex-direction: column; align-items: center; } }
+
+    /* Streams */
+    .streams { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .proc-box { background: #10233f; border: 1.5px solid var(--blue-b); border-radius: 14px; padding: 22px 26px; font-weight: 700; }
+    .stream-tag { background: var(--panel); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px; font-family: monospace; font-size: .82rem; }
+    .stream-tag b { color: var(--accent-2); }
+
+    table.grid-t { border-collapse: collapse; font-size: .88rem; margin: 0 auto; }
+    table.grid-t td, table.grid-t th { border: 1px solid var(--border); padding: 7px 12px; }
+    table.grid-t th { background: var(--panel); color: var(--muted); }
+    table.grid-t code { color: var(--code); }
+
+    .hint { margin-top: 18px; font-size: .82rem; color: var(--muted); }
+    .hint kbd { background: var(--panel-2); border: 1px solid var(--border); border-radius: 5px; padding: 1px 7px; font-family: monospace; }
+
+    /* Controls */
+    .controls {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 70px; z-index: 20;
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      background: rgba(15,20,32,.85); backdrop-filter: blur(8px); border-top: 1px solid var(--border);
+    }
+    .controls button {
+      background: var(--panel); color: var(--text); border: 1px solid var(--border);
+      border-radius: 10px; width: 44px; height: 44px; font-size: 1.2rem; cursor: pointer;
+    }
+    .controls button:hover:not(:disabled) { border-color: var(--accent); }
+    .controls button:disabled { opacity: .4; cursor: not-allowed; }
+    .dots { display: flex; gap: 8px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--border); cursor: pointer; border: none; padding: 0; }
+    .dot.active { background: var(--accent); transform: scale(1.25); }
+    .counter { position: fixed; bottom: 22px; right: 20px; color: var(--muted); font-size: .82rem; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">🐧 Linux <span>Visual Slides</span></div>
+    <div><a href="./">🚀 Quiz</a> · <a href="linux-theory.html">📖 Theory</a> · <a href="linux.html">🐧 Memo</a></div>
+  </div>
+
+  <div class="deck">
+    <div class="track" id="track">
+
+      <!-- Slide 1: intro -->
+      <section class="slide">
+        <h2>🐧 Linux, Visually</h2>
+        <p class="sub">A quick visual tour of the concepts every DevOps engineer should picture in their head. Use the arrows or your keyboard to navigate.</p>
+        <div class="row" style="gap:10px">
+          <span class="chip blue">filesystem</span>
+          <span class="chip blue">permissions</span>
+          <span class="chip blue">boot</span>
+          <span class="chip blue">processes</span>
+          <span class="chip blue">streams</span>
+        </div>
+        <p class="hint">Navigate with <kbd>←</kbd> <kbd>→</kbd> arrows, the dots below, or swipe on mobile.</p>
+      </section>
+
+      <!-- Slide 2: architecture layers -->
+      <section class="slide">
+        <h2><span class="n">01</span>System Architecture</h2>
+        <p class="sub">Linux is layered: your apps ask the shell &amp; libraries, which ask the kernel, which drives the hardware.</p>
+        <div class="layers">
+          <div class="layer l5">👤 User applications <small>browsers, servers, your scripts</small></div>
+          <div class="layer l4">🐚 Shell &amp; utilities <small>bash, coreutils (ls, cp, grep…)</small></div>
+          <div class="layer l3">📚 Libraries &amp; system calls <small>glibc — the bridge to the kernel</small></div>
+          <div class="layer l2">🧠 Kernel <small>processes, memory, filesystems, drivers</small></div>
+          <div class="layer l1">🔌 Hardware <small>CPU, RAM, disks, network</small></div>
+        </div>
+      </section>
+
+      <!-- Slide 3: filesystem tree -->
+      <section class="slide">
+        <h2><span class="n">02</span>Filesystem Hierarchy</h2>
+        <p class="sub">One tree from <code>/</code> — no drive letters. Devices are <em>mounted</em> into it (FHS standard).</p>
+        <div class="tree">
+          <div class="row"><span class="chip root">/ &nbsp;root</span></div>
+          <div class="down"></div>
+          <div class="row">
+            <span class="chip blue">/bin</span><span class="chip blue">/boot</span><span class="chip blue">/dev</span>
+            <span class="chip blue">/etc</span><span class="chip blue">/home</span><span class="chip blue">/lib</span>
+            <span class="chip blue">/media</span><span class="chip blue">/mnt</span><span class="chip blue">/opt</span>
+            <span class="chip blue">/proc</span><span class="chip blue">/root</span><span class="chip blue">/sbin</span>
+            <span class="chip blue">/srv</span><span class="chip blue">/sys</span><span class="chip blue">/tmp</span>
+            <span class="chip blue">/usr</span><span class="chip blue">/var</span>
+          </div>
+          <div class="subgrid">
+            <div class="subcard">
+              <div class="label">/usr — user programs</div>
+              <div class="row">
+                <span class="chip green">/bin</span><span class="chip green">/include</span><span class="chip green">/lib</span>
+                <span class="chip green">/local</span><span class="chip green">/sbin</span><span class="chip green">/src</span>
+              </div>
+            </div>
+            <div class="subcard">
+              <div class="label">/var — variable data</div>
+              <div class="row">
+                <span class="chip green">/cache</span><span class="chip green">/lib</span><span class="chip green">/log</span>
+                <span class="chip green">/mail</span><span class="chip green">/spool</span><span class="chip green">/tmp</span>
+              </div>
+            </div>
+          </div>
+          <div class="legend">
+            <span><b style="background:var(--root);border-color:var(--root-b)"></b>root</span>
+            <span><b style="background:var(--blue);border-color:var(--blue-b)"></b>top-level dirs</span>
+            <span><b style="background:var(--green);border-color:var(--green-b)"></b>sub-directories</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4: permissions anatomy -->
+      <section class="slide">
+        <h2><span class="n">03</span>Anatomy of Permissions</h2>
+        <p class="sub">Reading <code>-rwxr-xr--</code> : a type bit + three triplets. Each triplet is a number (r=4, w=2, x=1).</p>
+        <div class="perm">
+          <div class="grp type"><div class="bits">-</div><div class="who">type</div><div class="oct">file</div></div>
+          <div class="grp u"><div class="bits">rwx</div><div class="who">user</div><div class="oct">7</div></div>
+          <div class="grp g"><div class="bits">r-x</div><div class="who">group</div><div class="oct">5</div></div>
+          <div class="grp o"><div class="bits">r--</div><div class="who">others</div><div class="oct">4</div></div>
+        </div>
+        <p class="hint">So <code>-rwxr-xr--</code> = <code>chmod 754</code>. Common ones: <code>755</code> executables, <code>644</code> normal files.</p>
+      </section>
+
+      <!-- Slide 5: boot process -->
+      <section class="slide">
+        <h2><span class="n">04</span>The Boot Process</h2>
+        <p class="sub">From power button to login prompt, in five stages.</p>
+        <div class="flow">
+          <div class="step"><div class="t">1 · Firmware</div><div class="d">BIOS/UEFI inits hardware, finds a boot device</div></div>
+          <div class="arrow">→</div>
+          <div class="step"><div class="t">2 · Bootloader</div><div class="d">GRUB loads the kernel + initramfs into memory</div></div>
+          <div class="arrow">→</div>
+          <div class="step"><div class="t">3 · Kernel</div><div class="d">Inits drivers, mounts root FS, starts PID 1</div></div>
+          <div class="arrow">→</div>
+          <div class="step"><div class="t">4 · systemd</div><div class="d">PID 1 starts services to reach the target</div></div>
+          <div class="arrow">→</div>
+          <div class="step"><div class="t">5 · Login</div><div class="d">getty / display manager prompts you in</div></div>
+        </div>
+      </section>
+
+      <!-- Slide 6: streams & pipes -->
+      <section class="slide">
+        <h2><span class="n">05</span>Streams &amp; Pipes</h2>
+        <p class="sub">Every process has three streams. A <code>|</code> pipe wires one program's output into the next one's input.</p>
+        <div class="streams">
+          <div class="stream-tag"><b>stdin</b> (0)<br>input →</div>
+          <div class="proc-box">process</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="stream-tag">→ <b>stdout</b> (1) normal output</div>
+            <div class="stream-tag">→ <b>stderr</b> (2) errors</div>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:26px"><code>cat access.log | grep 500 | wc -l</code> — chain small tools to answer big questions.</p>
+      </section>
+
+      <!-- Slide 7: signals -->
+      <section class="slide">
+        <h2><span class="n">06</span>Processes &amp; Signals</h2>
+        <p class="sub">Processes form a tree from PID 1 (<code>systemd</code>). You control them by sending signals.</p>
+        <table class="grid-t">
+          <tr><th>Signal</th><th>№</th><th>Effect</th></tr>
+          <tr><td><code>SIGTERM</code></td><td>15</td><td>Politely ask to stop — the default of <code>kill</code></td></tr>
+          <tr><td><code>SIGKILL</code></td><td>9</td><td>Force-kill, can't be caught — <code>kill -9</code></td></tr>
+          <tr><td><code>SIGINT</code></td><td>2</td><td>Interrupt from keyboard — <code>Ctrl+C</code></td></tr>
+          <tr><td><code>SIGHUP</code></td><td>1</td><td>Hangup — often means "reload config"</td></tr>
+          <tr><td><code>SIGSTOP/CONT</code></td><td>19/18</td><td>Pause / resume a process</td></tr>
+        </table>
+      </section>
+
+      <!-- Slide 8: recap -->
+      <section class="slide">
+        <h2>🎯 You've got the picture</h2>
+        <p class="sub">Keep exploring — then test yourself.</p>
+        <div class="row" style="gap:12px;flex-wrap:wrap">
+          <a href="./" class="chip blue" style="text-decoration:none">🚀 Take the DevOps quiz</a>
+          <a href="linux-theory.html" class="chip green" style="text-decoration:none">📖 Read the theory</a>
+          <a href="linux.html" class="chip green" style="text-decoration:none">🐧 Commands memo</a>
+        </div>
+        <p class="hint">Part of <a href="https://github.com/skybytescode/skillbox" style="color:var(--accent)">SkillBox on GitHub</a></p>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="prev" aria-label="Previous">‹</button>
+    <div class="dots" id="dots"></div>
+    <button id="next" aria-label="Next">›</button>
+  </div>
+  <div class="counter" id="counter"></div>
+
+  <script>
+    const track = document.getElementById("track");
+    const slides = [...track.children];
+    const dotsBox = document.getElementById("dots");
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    const counter = document.getElementById("counter");
+    let idx = 0;
+
+    slides.forEach((_, i) => {
+      const b = document.createElement("button");
+      b.className = "dot";
+      b.onclick = () => go(i);
+      dotsBox.appendChild(b);
+    });
+    const dots = [...dotsBox.children];
+
+    function go(i) {
+      idx = Math.max(0, Math.min(slides.length - 1, i));
+      track.style.transform = `translateX(-${idx * 100}%)`;
+      dots.forEach((d, k) => d.classList.toggle("active", k === idx));
+      prev.disabled = idx === 0;
+      next.disabled = idx === slides.length - 1;
+      counter.textContent = `${idx + 1} / ${slides.length}`;
+    }
+
+    prev.onclick = () => go(idx - 1);
+    next.onclick = () => go(idx + 1);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === "PageDown") go(idx + 1);
+      if (e.key === "ArrowLeft" || e.key === "PageUp") go(idx - 1);
+      if (e.key === "Home") go(0);
+      if (e.key === "End") go(slides.length - 1);
+    });
+
+    // Touch swipe
+    let x0 = null;
+    track.addEventListener("touchstart", (e) => (x0 = e.touches[0].clientX), { passive: true });
+    track.addEventListener("touchend", (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) go(idx + (dx < 0 ? 1 : -1));
+      x0 = null;
+    });
+
+    go(0);
+  </script>
+</body>
+</html>
