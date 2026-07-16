@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>find Memo · SkillBox</title>
+  <style>
+    :root {
+      --bg: #0f1420; --panel: #171e2e; --panel-2: #1f293d;
+      --text: #e6ecf5; --muted: #93a1bd; --accent: #4f8cff; --accent-2: #2ee6a6;
+      --code: #ffd479; --border: #2a3550; --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -200px, #3a2a14 0%, var(--bg) 60%);
+      color: var(--text); line-height: 1.55; min-height: 100vh;
+    }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+    .site-header { padding: 40px 0 10px; text-align: center; }
+    .site-header h1 { margin: 0; font-size: 2rem; letter-spacing: -0.5px; }
+    .site-header h1 span { color: #ffb86b; }
+    .tagline { color: var(--muted); margin: 8px 0 0; }
+    .nav { margin-top: 10px; font-size: .9rem; }
+    .nav a { color: var(--accent); text-decoration: none; margin: 0 6px; }
+    .nav a:hover { text-decoration: underline; }
+
+    .synopsis {
+      background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px 18px; margin: 18px 0 4px; text-align: center;
+    }
+    .synopsis code {
+      font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+      color: var(--code); font-size: 1rem;
+    }
+    .synopsis .desc { color: var(--muted); font-size: .85rem; margin-top: 8px; }
+
+    .toolbar {
+      position: sticky; top: 0; z-index: 5; padding: 14px 0;
+      background: linear-gradient(180deg, var(--bg) 70%, transparent);
+    }
+    #search {
+      width: 100%; padding: 14px 16px; font-size: 1rem;
+      background: var(--panel-2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 12px;
+    }
+    #search::placeholder { color: var(--muted); }
+    .count { color: var(--muted); font-size: .82rem; margin: 8px 2px 0; }
+
+    .tier { margin: 26px 0; }
+    .tier-head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; }
+    .tier-head h2 { margin: 0; font-size: 1.25rem; }
+    .badge { font-size: .7rem; padding: 3px 10px; border-radius: 999px; font-weight: 700; background: #402f17; color: #ffcf9e; }
+    .tier-desc { color: var(--muted); font-size: .85rem; margin: 0 0 12px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+    .cmd {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px;
+    }
+    .cmd code {
+      display: inline-block; font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+      color: var(--code); font-size: .9rem; font-weight: 600;
+      background: #0d1320; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border);
+      word-break: break-word;
+    }
+    .cmd .desc { color: var(--muted); font-size: .88rem; margin-top: 7px; }
+    .cmd.hidden { display: none; }
+    .tier.hidden { display: none; }
+    .noresults { text-align: center; color: var(--muted); padding: 30px; display: none; }
+
+    .site-footer { text-align: center; padding: 30px 0 40px; color: var(--muted); font-size: .82rem; }
+    .site-footer a { color: var(--accent); text-decoration: none; }
+    .site-footer code { color: var(--code); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>📂 <span>find</span> Memo</h1>
+      <p class="tagline">Locate files by name, type, time, size — then act on them.</p>
+      <nav class="nav">
+        <a href="./">🚀 DevOps Quiz</a> ·
+        <a href="linux.html">🐧 Linux Memo</a> ·
+        <a href="linux-theory.html">📖 Linux Theory</a> ·
+        <a href="vim.html">📝 Vim Memo</a> ·
+        <a href="grep.html">🔎 grep Memo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="synopsis">
+      <code>find [PATH...] [TESTS] [ACTIONS]</code>
+      <div class="desc">Walk a directory tree, keep entries matching the TESTS, run ACTIONS on them (default: print).</div>
+    </div>
+
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="🔍 Filter examples…  (e.g. 'delete', 'size', 'modified', 'exec')" autocomplete="off" />
+      <p class="count" id="count"></p>
+    </div>
+
+    <div id="tiers"></div>
+    <p class="noresults" id="noresults">No examples match your search.</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>💡 <code>fd</code> is a fast, friendly modern alternative for the common cases · Part of <a href="https://github.com/skybytescode/skillbox">SkillBox</a></p>
+    </div>
+  </footer>
+
+  <script>
+    const DATA = [
+      {
+        tier: "Basics", desc: "Where to search and the general shape.",
+        cmds: [
+          ["find .", "List everything under the current directory, recursively"],
+          ["find /var/log", "Search a specific starting path"],
+          ["find . /tmp -name '*.log'", "Search multiple starting paths at once"],
+          ["find . -maxdepth 1", "Only the current level — do not recurse deeper"],
+          ["find . -mindepth 2", "Skip the top levels; start at least 2 deep"],
+          ["find . 2>/dev/null", "Silence 'Permission denied' errors"],
+        ],
+      },
+      {
+        tier: "By name & type", desc: "The most common filters.",
+        cmds: [
+          ["find . -name '*.txt'", "Match by name (quote the pattern!)"],
+          ["find . -iname '*.JPG'", "-iname: case-insensitive name match"],
+          ["find . -not -name '*.log'", "Invert: everything except *.log"],
+          ["find . -path '*/build/*'", "Match against the whole path, not just the name"],
+          ["find . -regex '.*\\.[ch]'", "Match the full path with a regex"],
+          ["find . -type f", "Only regular files"],
+          ["find . -type d", "Only directories"],
+          ["find . -type l", "Only symbolic links"],
+          ["find . -type f -name '*.sh'", "Combine tests: shell scripts only (AND is implicit)"],
+          ["find . -empty", "Empty files and directories"],
+        ],
+      },
+      {
+        tier: "By time", desc: "Modified / accessed / changed. N = days, use -mmin for minutes.",
+        cmds: [
+          ["find . -mtime -1", "Modified less than 1 day ago"],
+          ["find . -mtime +7", "Modified more than 7 days ago"],
+          ["find . -mtime 0", "Modified within the last 24 hours"],
+          ["find . -mmin -30", "Modified in the last 30 minutes"],
+          ["find . -atime +30", "Accessed more than 30 days ago"],
+          ["find . -ctime -2", "Metadata (perms/owner) changed in last 2 days"],
+          ["find . -newer ref.txt", "Modified more recently than ref.txt"],
+          ["find . -newermt '2026-01-01'", "Modified after a specific date"],
+        ],
+      },
+      {
+        tier: "By size", desc: "Suffixes: c=bytes, k=KB, M=MB, G=GB. +/- means more/less than.",
+        cmds: [
+          ["find . -size +100M", "Larger than 100 MB"],
+          ["find . -size -10k", "Smaller than 10 KB"],
+          ["find . -size 0", "Exactly zero bytes (empty)"],
+          ["find . -type f -size +1G", "Big files hogging disk space"],
+          ["find . -size +50M -printf '%s %p\\n'", "Print size + path for large files"],
+        ],
+      },
+      {
+        tier: "By permission & owner", desc: "Filter on ownership and mode.",
+        cmds: [
+          ["find . -user alice", "Files owned by user alice"],
+          ["find . -group devs", "Files belonging to group devs"],
+          ["find . -perm 644", "Exactly permission 644"],
+          ["find . -perm -u+x", "At least user-executable (any extra bits ok)"],
+          ["find . -perm /222", "Writable by anyone (any write bit set)"],
+          ["find . -type f -perm -4000", "Find setuid files (security audit)"],
+          ["find . -nouser", "Files owned by a UID with no user (orphaned)"],
+        ],
+      },
+      {
+        tier: "Actions: run commands", desc: "Do something with each result.",
+        cmds: [
+          ["find . -name '*.tmp' -delete", "Delete every matching file (be careful!)"],
+          ["find . -name '*.log' -exec rm {} \\;", "Run a command per file; {} is the path"],
+          ["find . -name '*.log' -exec rm {} +", "Faster: pass many files to one rm invocation"],
+          ["find . -name '*.txt' -exec grep -l err {} +", "Grep inside matched files"],
+          ["find . -type f -exec chmod 644 {} +", "Fix permissions on all files"],
+          ["find . -name '*.jpg' -ok rm {} \\;", "-ok: like -exec but ask before each"],
+          ["find . -type d -exec chmod 755 {} +", "Set 755 on all directories"],
+          ["find . -name '*.bak' -exec mv {} /tmp \\;", "Move matches elsewhere"],
+          ["find . -type f -print0 | xargs -0 grep foo", "-print0 + xargs -0: safe with spaces/newlines"],
+        ],
+      },
+      {
+        tier: "Combining & output", desc: "Logic operators and formatting.",
+        cmds: [
+          ["find . -name '*.c' -o -name '*.h'", "-o: OR — C source or header files"],
+          ["find . -type f -a -size +1M", "-a: AND (this is the implicit default)"],
+          ["find . ! -name '*.md'", "! negates the next test"],
+          ["find . \\( -name '*.js' -o -name '*.ts' \\)", "Group with \\( \\) to control precedence"],
+          ["find . -name node_modules -prune -o -print", "-prune: skip a directory entirely (e.g. node_modules)"],
+          ["find . -type f | wc -l", "Count files by piping to wc"],
+          ["find . -printf '%p %s bytes\\n'", "-printf: custom output format"],
+          ["find . -type f -exec ls -lh {} +", "Long listing of every match"],
+        ],
+      },
+      {
+        tier: "Handy recipes", desc: "Real tasks you'll reuse.",
+        cmds: [
+          ["find . -name '*.log' -mtime +30 -delete", "Clean logs older than a month"],
+          ["find . -type f -exec du -h {} + | sort -rh | head", "Top biggest files"],
+          ["find . -type d -empty -delete", "Remove empty directories"],
+          ["find /path -type f | wc -l", "How many files are under a path"],
+          ["find . -name '*.py' -exec sed -i 's/foo/bar/g' {} +", "Bulk find-and-replace across files"],
+          ["find . -type f -newermt '1 hour ago'", "What changed in the last hour"],
+          ["find . -name '.DS_Store' -delete", "Purge macOS junk files"],
+        ],
+      },
+    ];
+
+    const tiersEl = document.getElementById("tiers");
+    const total = DATA.reduce((n, t) => n + t.cmds.length, 0);
+
+    for (const t of DATA) {
+      const section = document.createElement("section");
+      section.className = "tier";
+      section.innerHTML =
+        `<div class="tier-head"><h2>${t.tier}</h2><span class="badge">${t.cmds.length}</span></div>` +
+        `<p class="tier-desc">${t.desc}</p>`;
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      for (const [cmd, desc] of t.cmds) {
+        const div = document.createElement("div");
+        div.className = "cmd";
+        div.dataset.text = (cmd + " " + desc).toLowerCase();
+        div.innerHTML = `<code></code><div class="desc"></div>`;
+        div.querySelector("code").textContent = cmd;
+        div.querySelector(".desc").textContent = desc;
+        grid.appendChild(div);
+      }
+      section.appendChild(grid);
+      tiersEl.appendChild(section);
+    }
+
+    const search = document.getElementById("search");
+    const countEl = document.getElementById("count");
+    const noResults = document.getElementById("noresults");
+    countEl.textContent = `${total} examples`;
+
+    search.addEventListener("input", () => {
+      const q = search.value.trim().toLowerCase();
+      let shown = 0;
+      for (const section of document.querySelectorAll(".tier")) {
+        let visibleInSection = 0;
+        for (const card of section.querySelectorAll(".cmd")) {
+          const match = !q || card.dataset.text.includes(q);
+          card.classList.toggle("hidden", !match);
+          if (match) { shown++; visibleInSection++; }
+        }
+        section.classList.toggle("hidden", visibleInSection === 0);
+      }
+      countEl.textContent = q ? `${shown} of ${total} examples` : `${total} examples`;
+      noResults.style.display = shown === 0 ? "block" : "none";
+    });
+  </script>
+</body>
+</html>
