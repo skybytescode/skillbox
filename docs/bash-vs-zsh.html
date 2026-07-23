@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bash vs Zsh · SkillBox</title>
+  <style>
+    :root {
+      --bg: #0f1420; --panel: #171e2e; --panel-2: #1f293d;
+      --text: #e6ecf5; --muted: #93a1bd; --border: #2a3550; --radius: 14px;
+      --code: #ffd479;
+      --bash: #4f8cff; --bash-soft: #17233f; --bash-text: #cfe0fb;
+      --zsh: #b98cff; --zsh-soft: #241c3d; --zsh-text: #e3d6fb;
+      --ok: #2ee6a6; --warn: #ff9d5c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -200px, #201a35 0%, var(--bg) 60%);
+      color: var(--text); line-height: 1.6; min-height: 100vh;
+    }
+    a { color: var(--bash); }
+    code {
+      font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+      color: var(--code); background: #0d1320; padding: 2px 6px;
+      border-radius: 5px; border: 1px solid var(--border); font-size: .88em;
+    }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+
+    .site-header { padding: 40px 0 10px; text-align: center; }
+    .site-header h1 { margin: 0; font-size: 2rem; letter-spacing: -0.5px; }
+    .site-header h1 .b { color: var(--bash); }
+    .site-header h1 .z { color: var(--zsh); }
+    .site-header h1 .vs { color: var(--muted); font-size: .7em; margin: 0 6px; font-weight: 400; }
+    .tagline { color: var(--muted); margin: 8px 0 0; }
+    .nav { margin-top: 12px; font-size: .9rem; }
+    .nav a { text-decoration: none; margin: 0 6px; color: var(--muted); }
+    .nav a:hover { text-decoration: underline; color: var(--text); }
+
+    main { padding-bottom: 40px; }
+    section.block { margin: 34px 0; }
+    .block h2 { font-size: 1.3rem; margin: 0 0 4px; }
+    .block .lede { color: var(--muted); font-size: .92rem; margin: 0 0 16px; max-width: 68ch; }
+
+    /* Lineage flow */
+    .lineage {
+      display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+      gap: 6px; padding: 22px 16px; background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .lnode {
+      font-family: "SF Mono", Menlo, monospace; font-weight: 700; font-size: .88rem;
+      padding: 9px 14px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--panel-2);
+      white-space: nowrap;
+    }
+    .lnode.root { color: var(--muted); }
+    .lnode.bash { color: var(--bash-text); background: var(--bash-soft); border-color: var(--bash); }
+    .lnode.zsh { color: var(--zsh-text); background: var(--zsh-soft); border-color: var(--zsh); }
+    .larrow { color: var(--muted); font-size: 1.2rem; }
+    .lfork { display: flex; flex-direction: column; gap: 6px; }
+    @media (max-width: 640px) { .lineage { flex-direction: column; } .larrow { transform: rotate(90deg); } }
+
+    /* Spec cards */
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
+    .shellcard { border-radius: var(--radius); padding: 18px 20px; border: 1.5px solid; }
+    .shellcard.bash { background: var(--bash-soft); border-color: var(--bash); }
+    .shellcard.zsh { background: var(--zsh-soft); border-color: var(--zsh); }
+    .shellcard h3 { margin: 0 0 10px; font-size: 1.05rem; }
+    .shellcard.bash h3 { color: var(--bash-text); }
+    .shellcard.zsh h3 { color: var(--zsh-text); }
+    .shellcard dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; font-size: .87rem; }
+    .shellcard dt { color: var(--muted); }
+    .shellcard dd { margin: 0; }
+
+    /* Feature matrix */
+    table.matrix { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    table.matrix th, table.matrix td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    table.matrix thead th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .4px; }
+    table.matrix thead th.bash { color: var(--bash-text); }
+    table.matrix thead th.zsh { color: var(--zsh-text); }
+    table.matrix td.feat { color: var(--text); font-weight: 600; width: 22%; }
+    .tblwrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel); }
+    .tblwrap table { margin: 0; }
+    .tblwrap th, .tblwrap td { padding: 12px 16px; }
+
+    /* Modes 2x2 grid */
+    .modes {
+      display: grid; grid-template-columns: 90px 1fr 1fr; gap: 2px;
+      background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+    }
+    .modes > div { background: var(--panel); padding: 14px 16px; }
+    .modes .corner { background: var(--panel-2); }
+    .modes .axis-top { background: var(--panel-2); text-align: center; font-weight: 700; font-size: .85rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; display: flex; align-items: center; justify-content: center; }
+    .modes .axis-left { background: var(--panel-2); writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; font-weight: 700; font-size: .85rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; display: flex; align-items: center; justify-content: center; }
+    .modes .cell .eg { color: var(--muted); font-size: .78rem; margin-bottom: 8px; }
+    .modes .cell .files code { display: block; margin: 3px 0; width: fit-content; }
+    .modes .cell.empty { color: var(--muted); font-style: italic; font-size: .85rem; }
+    @media (max-width: 700px) {
+      .modes { grid-template-columns: 60px 1fr; }
+      .modes .axis-top:nth-of-type(3) { display: none; }
+    }
+
+    /* Startup chains */
+    .chain { display: flex; flex-direction: column; gap: 8px; }
+    .clink { display: flex; align-items: center; gap: 10px; }
+    .clink .n { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; font-size: .85rem; }
+    .clink .n code { background: transparent; border: none; padding: 0; }
+    .clink .always { border-color: var(--ok); }
+    .clink .arrow-down { text-align: center; color: var(--muted); }
+
+    /* Syntax diff */
+    .diffgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 640px) { .diffgrid { grid-template-columns: 1fr; } }
+    .diffcard { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .diffcard .who { font-size: .72rem; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; margin-bottom: 8px; }
+    .diffcard.bash .who { color: var(--bash-text); }
+    .diffcard.zsh .who { color: var(--zsh-text); }
+    .diffcard pre { margin: 0; font-family: "SF Mono", Menlo, monospace; font-size: .82rem; white-space: pre-wrap; word-break: break-word; }
+    .diffcard pre .c1 { color: var(--code); }
+    .diffcard .note { color: var(--muted); font-size: .8rem; margin-top: 8px; }
+
+    .verdict {
+      background: var(--panel); border-left: 3px solid var(--ok); border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 18px 22px; font-size: .92rem;
+    }
+    .verdict b.b { color: var(--bash-text); }
+    .verdict b.z { color: var(--zsh-text); }
+
+    .site-footer { text-align: center; padding: 20px 0 40px; color: var(--muted); font-size: .82rem; }
+    .site-footer a { text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1><span class="b">bash</span><span class="vs">vs</span><span class="z">zsh</span></h1>
+      <p class="tagline">Same job — run your commands — two different lineages, config chains, and default behaviors.</p>
+      <nav class="nav">
+        <a href="./">🚀 DevOps Quiz</a> ·
+        <a href="linux.html">🐧 Linux Memo</a> ·
+        <a href="linux-theory.html">📖 Linux Theory</a> ·
+        <a href="vim.html">📝 Vim Memo</a> ·
+        <a href="grep.html">🔎 grep Memo</a> ·
+        <a href="find.html">📂 find Memo</a> ·
+        <a href="slides.html">🖼️ Visual Slides</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <section class="block">
+      <h2>Where they come from</h2>
+      <p class="lede">Both trace back to the original Bourne shell (<code>sh</code>), but pick up different influences on the way.</p>
+      <div class="lineage">
+        <div class="lnode root">sh<br><small style="color:var(--muted);font-weight:400">Bourne, 1977</small></div>
+        <div class="larrow">→</div>
+        <div class="lfork">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="larrow" style="font-size:.9rem">↗</span>
+            <div class="lnode bash">bash<br><small style="font-weight:400">GNU · Brian Fox, 1989</small></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="larrow" style="font-size:.9rem">↘</span>
+            <div class="lnode zsh">zsh<br><small style="font-weight:400">Paul Falstad, 1990</small></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>At a glance</h2>
+      <div class="cols">
+        <div class="shellcard bash">
+          <h3>bash — Bourne Again SHell</h3>
+          <dl>
+            <dt>Born</dt><dd>1989, GNU Project</dd>
+            <dt>Default on</dt><dd>Most Linux distros, WSL</dd>
+            <dt>Was default on</dt><dd>macOS (until Catalina, 2019)</dd>
+            <dt>Arrays</dt><dd>0-indexed</dd>
+            <dt>Frameworks</dt><dd>bash-it, oh-my-bash (less common)</dd>
+          </dl>
+        </div>
+        <div class="shellcard zsh">
+          <h3>zsh — Z shell</h3>
+          <dl>
+            <dt>Born</dt><dd>1990, blends sh/ksh/tcsh/bash ideas</dd>
+            <dt>Default on</dt><dd>macOS (since Catalina, 2019)</dd>
+            <dt>Popular via</dt><dd>Oh My Zsh, Prezto, Powerlevel10k</dd>
+            <dt>Arrays</dt><dd>1-indexed by default</dd>
+            <dt>Frameworks</dt><dd>Oh My Zsh, zinit, Antidote — huge ecosystem</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Feature matrix</h2>
+      <p class="lede">Both run POSIX-ish scripts fine. The everyday difference is in the interactive layer on top.</p>
+      <div class="tblwrap">
+        <table class="matrix">
+          <thead><tr><th></th><th class="bash">bash</th><th class="zsh">zsh</th></tr></thead>
+          <tbody>
+            <tr><td class="feat">Tab completion</td><td>Good — readline-based</td><td>Excellent — menu-driven, context-aware (<code>compinit</code>)</td></tr>
+            <tr><td class="feat">Spelling correction</td><td>Only for <code>cd</code> (<code>shopt -s cdspell</code>)</td><td>Built-in for commands too (<code>setopt correct</code>)</td></tr>
+            <tr><td class="feat">Globbing</td><td>Extended globs need <code>shopt -s extglob</code></td><td>Rich globbing on by default, plus glob qualifiers (<code>*(.om[1])</code>)</td></tr>
+            <tr><td class="feat">Recursive glob <code>**</code></td><td>Needs <code>shopt -s globstar</code></td><td>On by default</td></tr>
+            <tr><td class="feat">Array index base</td><td><code>0</code></td><td><code>1</code> (unless <code>KSH_ARRAYS</code> set)</td></tr>
+            <tr><td class="feat">Prompt customization</td><td><code>PS1</code> with <code>\u \h \w</code> escapes</td><td><code>PROMPT</code>/<code>PS1</code> with <code>%n %m %~</code>, plus a separate right-side <code>RPROMPT</code></td></tr>
+            <tr><td class="feat">Plugin ecosystem</td><td>Small</td><td>Huge (Oh My Zsh, themes, autosuggestions, syntax highlighting)</td></tr>
+            <tr><td class="feat">Scripting portability</td><td>Ubiquitous — assume every server has it</td><td>Less guaranteed on servers; install separately</td></tr>
+            <tr><td class="feat">POSIX mode</td><td><code>bash --posix</code></td><td><code>emulate sh</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Bash's four modes</h2>
+      <p class="lede">Bash behaves differently depending on two independent switches: <b>login vs non-login</b>, and <b>interactive vs non-interactive</b>. Which config files get sourced depends on where you land in this grid.</p>
+      <div class="modes">
+        <div class="corner"></div>
+        <div class="axis-top">Interactive</div>
+        <div class="axis-top">Non-interactive</div>
+
+        <div class="axis-left">Login</div>
+        <div class="cell">
+          <div class="eg">e.g. SSH in, console login (tty1), <code>bash --login</code></div>
+          <div class="files">
+            <code>/etc/profile</code>
+            <code>~/.bash_profile</code> <span style="color:var(--muted)">(or <code>~/.bash_login</code>, <code>~/.profile</code> — first found)</span>
+            <code>~/.bashrc</code> <span style="color:var(--muted)">(only if <code>.bash_profile</code> sources it manually)</span>
+          </div>
+        </div>
+        <div class="cell">
+          <div class="eg">e.g. <code>bash --login script.sh</code> — rare in practice</div>
+          <div class="files">
+            <code>/etc/profile</code>
+            <code>~/.bash_profile</code> <span style="color:var(--muted)">chain, same as left</span>
+          </div>
+        </div>
+
+        <div class="axis-left">Non-login</div>
+        <div class="cell">
+          <div class="eg">e.g. opening a new terminal tab, typing <code>bash</code></div>
+          <div class="files">
+            <code>/etc/bash.bashrc</code> <span style="color:var(--muted)">(distro-dependent)</span>
+            <code>~/.bashrc</code>
+          </div>
+        </div>
+        <div class="cell empty">
+          e.g. running <code>./script.sh</code>, cron jobs — no files read automatically, unless <code>$BASH_ENV</code> is set
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Startup file chains, side by side</h2>
+      <p class="lede">The one thing that trips people up: <strong style="color:var(--ok)">zsh always reads <code style="color:var(--ok);background:transparent;border:none;padding:0">~/.zshenv</code></strong>, even for non-interactive scripts — bash has no equivalent that's always-on.</p>
+      <div class="cols">
+        <div class="shellcard bash">
+          <h3>bash (login shell)</h3>
+          <div class="chain">
+            <div class="clink"><div class="n"><code>/etc/profile</code></div></div>
+            <div class="arrow-down">↓</div>
+            <div class="clink"><div class="n"><code>~/.bash_profile</code> <span style="color:var(--muted)">(first of profile/login/.profile)</span></div></div>
+            <div class="arrow-down">↓ manually sources</div>
+            <div class="clink"><div class="n"><code>~/.bashrc</code></div></div>
+          </div>
+        </div>
+        <div class="shellcard zsh">
+          <h3>zsh (login + interactive)</h3>
+          <div class="chain">
+            <div class="clink"><div class="n always" style="border:1px solid var(--ok)"><code>~/.zshenv</code> <span style="color:var(--ok)">— always, every mode</span></div></div>
+            <div class="arrow-down">↓ if login</div>
+            <div class="clink"><div class="n"><code>/etc/zprofile</code> → <code>~/.zprofile</code></div></div>
+            <div class="arrow-down">↓ if interactive</div>
+            <div class="clink"><div class="n"><code>/etc/zshrc</code> → <code>~/.zshrc</code></div></div>
+            <div class="arrow-down">↓ if login</div>
+            <div class="clink"><div class="n"><code>/etc/zlogin</code> → <code>~/.zlogin</code></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Same idea, different syntax</h2>
+      <div class="diffgrid">
+        <div class="diffcard bash">
+          <div class="who">bash</div>
+          <pre>arr=(a b c)
+echo <span class="c1">${arr[0]}</span>   <span style="color:var(--muted)"># → a</span></pre>
+        </div>
+        <div class="diffcard zsh">
+          <div class="who">zsh</div>
+          <pre>arr=(a b c)
+echo <span class="c1">${arr[1]}</span>   <span style="color:var(--muted)"># → a</span></pre>
+        </div>
+        <div class="diffcard bash">
+          <div class="who">bash</div>
+          <pre>PS1=<span class="c1">'\u@\h:\w\$ '</span></pre>
+        </div>
+        <div class="diffcard zsh">
+          <div class="who">zsh</div>
+          <pre>PROMPT=<span class="c1">'%n@%m:%~%# '</span></pre>
+        </div>
+        <div class="diffcard bash">
+          <div class="who">bash</div>
+          <pre>shopt -s globstar
+ls **/*.go</pre>
+          <div class="note">must opt in</div>
+        </div>
+        <div class="diffcard zsh">
+          <div class="who">zsh</div>
+          <pre>ls **/*.go</pre>
+          <div class="note">works out of the box</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="verdict">
+      💡 <b class="b">bash</b> is the safe assumption for scripts — it's everywhere, from containers to servers. <b class="z">zsh</b> shines as your <em>interactive daily driver</em> — completion, correction, and plugins make typing commands nicer, but don't assume it exists on a remote box. Most people write <code>#!/bin/bash</code> at the top of scripts and use zsh (often via Oh My Zsh) in their own terminal.
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>Part of <a href="https://github.com/skybytescode/skillbox">SkillBox</a> · Test yourself in the <a href="./">quiz</a></p>
+  </footer>
+</body>
+</html>
