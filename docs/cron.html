@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cron Jobs · bash vs awk vs sed · SkillBox</title>
+  <style>
+    :root {
+      --bg: #0f1420; --panel: #171e2e; --panel-2: #1f293d;
+      --text: #e6ecf5; --muted: #93a1bd; --border: #2a3550; --radius: 14px;
+      --code: #ffd479;
+      --cron: #5cc8ff; --cron-soft: #142433; --cron-text: #bfe9ff;
+      --bash: #4f8cff; --bash-soft: #17233f; --bash-text: #cfe0fb;
+      --awk: #2ee6a6; --awk-soft: #123227; --awk-text: #b9f5df;
+      --sed: #ff9d5c; --sed-soft: #3a2414; --sed-text: #ffd8b0;
+      --ok: #2ee6a6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -200px, #142235 0%, var(--bg) 60%);
+      color: var(--text); line-height: 1.6; min-height: 100vh;
+    }
+    a { color: var(--cron); }
+    code {
+      font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+      color: var(--code); background: #0d1320; padding: 2px 6px;
+      border-radius: 5px; border: 1px solid var(--border); font-size: .88em;
+    }
+    .wrap { max-width: 1060px; margin: 0 auto; padding: 0 20px; }
+
+    .site-header { padding: 40px 0 10px; text-align: center; }
+    .site-header h1 { margin: 0; font-size: 1.9rem; letter-spacing: -0.5px; }
+    .site-header h1 .c { color: var(--cron); }
+    .site-header h1 .sep { color: var(--muted); font-size: .65em; margin: 0 8px; font-weight: 400; }
+    .site-header h1 .b { color: var(--bash); }
+    .site-header h1 .a { color: var(--awk); }
+    .site-header h1 .s { color: var(--sed); }
+    .tagline { color: var(--muted); margin: 8px 0 0; }
+    .nav { margin-top: 12px; font-size: .9rem; }
+    .nav a { text-decoration: none; margin: 0 6px; color: var(--muted); }
+    .nav a:hover { text-decoration: underline; color: var(--text); }
+
+    main { padding-bottom: 40px; }
+    section.block { margin: 34px 0; }
+    .block h2 { font-size: 1.3rem; margin: 0 0 4px; }
+    .block .lede { color: var(--muted); font-size: .92rem; margin: 0 0 16px; max-width: 70ch; }
+    .kicker { display: inline-block; font-size: .72rem; text-transform: uppercase; letter-spacing: .6px; font-weight: 700; color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; margin-bottom: 10px; }
+
+    /* Cron field diagram */
+    .cronline {
+      font-family: "SF Mono", Menlo, monospace; font-size: 1rem; text-align: center;
+      background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 22px 16px 10px; overflow-x: auto;
+    }
+    .cronline .stars { display: flex; justify-content: center; gap: 22px; white-space: nowrap; font-weight: 700; }
+    .cronline .stars span { display: inline-block; width: 34px; }
+    pre.diagram { font-family: "SF Mono", Menlo, monospace; font-size: .82rem; color: var(--muted); margin: 8px 0 0; text-align: left; display: inline-block; white-space: pre; }
+    pre.diagram b { color: var(--cron-text); }
+
+    .fieldcards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 16px; }
+    @media (max-width: 800px) { .fieldcards { grid-template-columns: repeat(2, 1fr); } }
+    .fcard { background: var(--cron-soft); border: 1px solid var(--cron); border-radius: 10px; padding: 10px 12px; font-size: .82rem; }
+    .fcard .name { color: var(--cron-text); font-weight: 700; margin-bottom: 4px; }
+    .fcard .range { color: var(--muted); }
+
+    /* Generic table */
+    .tblwrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel); }
+    table.matrix { width: 100%; border-collapse: collapse; font-size: .88rem; margin: 0; }
+    table.matrix th, table.matrix td { padding: 12px 16px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    table.matrix thead th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .4px; }
+    table.matrix thead th.b { color: var(--bash-text); }
+    table.matrix thead th.a { color: var(--awk-text); }
+    table.matrix thead th.s { color: var(--sed-text); }
+    table.matrix td.feat { color: var(--text); font-weight: 600; width: 20%; }
+    table.matrix tbody tr:last-child td { border-bottom: none; }
+
+    /* 3-up tool cards */
+    .cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    @media (max-width: 800px) { .cols3 { grid-template-columns: 1fr; } }
+    .toolcard { border-radius: var(--radius); padding: 18px 20px; border: 1.5px solid; }
+    .toolcard.bash { background: var(--bash-soft); border-color: var(--bash); }
+    .toolcard.awk { background: var(--awk-soft); border-color: var(--awk); }
+    .toolcard.sed { background: var(--sed-soft); border-color: var(--sed); }
+    .toolcard h3 { margin: 0 0 6px; font-size: 1.05rem; }
+    .toolcard.bash h3 { color: var(--bash-text); }
+    .toolcard.awk h3 { color: var(--awk-text); }
+    .toolcard.sed h3 { color: var(--sed-text); }
+    .toolcard .role { font-size: .8rem; color: var(--muted); margin-bottom: 10px; }
+    .toolcard pre { margin: 0; font-size: .8rem; white-space: pre-wrap; word-break: break-word; }
+
+    /* Syntax diff, 3 columns */
+    .taskrow { margin: 18px 0; }
+    .taskrow .tasklabel { font-size: .85rem; color: var(--muted); margin-bottom: 8px; }
+    .diffgrid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    @media (max-width: 800px) { .diffgrid3 { grid-template-columns: 1fr; } }
+    .diffcard { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+    .diffcard .who { font-size: .7rem; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; margin-bottom: 8px; }
+    .diffcard.bash .who { color: var(--bash-text); }
+    .diffcard.awk .who { color: var(--awk-text); }
+    .diffcard.sed .who { color: var(--sed-text); }
+    .diffcard pre { margin: 0; font-family: "SF Mono", Menlo, monospace; font-size: .78rem; white-space: pre-wrap; word-break: break-word; }
+
+    .callout {
+      background: var(--panel); border-left: 3px solid var(--cron); border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 16px 20px; font-size: .9rem; margin: 16px 0;
+    }
+    .verdict {
+      background: var(--panel); border-left: 3px solid var(--ok); border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 18px 22px; font-size: .92rem;
+    }
+    .verdict b.b { color: var(--bash-text); }
+    .verdict b.a { color: var(--awk-text); }
+    .verdict b.s { color: var(--sed-text); }
+
+    .site-footer { text-align: center; padding: 20px 0 40px; color: var(--muted); font-size: .82rem; }
+    .site-footer a { text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1><span class="c">cron</span><span class="sep">+</span><span class="b">bash</span><span class="sep">·</span><span class="a">awk</span><span class="sep">·</span><span class="s">sed</span></h1>
+      <p class="tagline">How Linux runs things on a schedule, and the three classic tools you glue together once it fires.</p>
+      <nav class="nav">
+        <a href="./">🚀 DevOps Quiz</a> ·
+        <a href="linux.html">🐧 Linux Memo</a> ·
+        <a href="linux-theory.html">📖 Linux Theory</a> ·
+        <a href="vim.html">📝 Vim Memo</a> ·
+        <a href="grep.html">🔎 grep Memo</a> ·
+        <a href="find.html">📂 find Memo</a> ·
+        <a href="bash-vs-zsh.html">🐚 Bash vs Zsh</a> ·
+        <a href="slides.html">🖼️ Visual Slides</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <section class="block">
+      <span class="kicker">Part 1 · Cron</span>
+      <h2>Anatomy of a crontab line</h2>
+      <p class="lede">Every cron entry is five time fields, then the command to run. All five must match the current minute for the job to fire.</p>
+      <div class="cronline">
+        <div class="stars">
+          <span>*</span><span>*</span><span>*</span><span>*</span><span>*</span><span style="width:auto">command to run</span>
+        </div>
+        <pre class="diagram"><b>│ │ │ │ │</b>
+<b>│ │ │ │ └─</b> day of week (0–7, both 0 and 7 = Sunday)
+<b>│ │ │ └───</b> month (1–12)
+<b>│ │ └─────</b> day of month (1–31)
+<b>│ └───────</b> hour (0–23)
+<b>└─────────</b> minute (0–59)</pre>
+      </div>
+      <div class="fieldcards">
+        <div class="fcard"><div class="name">minute</div><div class="range">0–59</div></div>
+        <div class="fcard"><div class="name">hour</div><div class="range">0–23</div></div>
+        <div class="fcard"><div class="name">day (month)</div><div class="range">1–31</div></div>
+        <div class="fcard"><div class="name">month</div><div class="range">1–12 or Jan–Dec</div></div>
+        <div class="fcard"><div class="name">day (week)</div><div class="range">0–7 or Sun–Sat</div></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Operators & shorthand</h2>
+      <div class="tblwrap">
+        <table class="matrix">
+          <thead><tr><th>Syntax</th><th>Meaning</th><th>Example</th></tr></thead>
+          <tbody>
+            <tr><td class="feat"><code>*</code></td><td>every value</td><td><code>* * * * *</code> → every minute</td></tr>
+            <tr><td class="feat"><code>,</code></td><td>list of values</td><td><code>0 9,17 * * *</code> → 9:00 and 17:00</td></tr>
+            <tr><td class="feat"><code>-</code></td><td>range</td><td><code>0 9-17 * * *</code> → hourly, 9am–5pm</td></tr>
+            <tr><td class="feat"><code>/</code></td><td>step</td><td><code>*/15 * * * *</code> → every 15 minutes</td></tr>
+            <tr><td class="feat"><code>@reboot</code></td><td>run once at startup</td><td><code>@reboot /usr/local/bin/warmup.sh</code></td></tr>
+            <tr><td class="feat"><code>@daily</code></td><td>same as <code>0 0 * * *</code></td><td>also <code>@hourly</code>, <code>@weekly</code>, <code>@monthly</code>, <code>@yearly</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Where jobs live</h2>
+      <div class="tblwrap">
+        <table class="matrix">
+          <thead><tr><th>Location</th><th>Who edits it</th><th>Runs as</th></tr></thead>
+          <tbody>
+            <tr><td class="feat"><code>crontab -e</code></td><td>current user, via editor</td><td>that user</td></tr>
+            <tr><td class="feat"><code>crontab -l</code> / <code>-r</code></td><td>list / remove current user's crontab</td><td>—</td></tr>
+            <tr><td class="feat"><code>/etc/crontab</code></td><td>root, system-wide</td><td>user named in the extra 6th field</td></tr>
+            <tr><td class="feat"><code>/etc/cron.d/*</code></td><td>root, packages drop files here</td><td>user named in each file</td></tr>
+            <tr><td class="feat"><code>/etc/cron.{hourly,daily,weekly,monthly}/</code></td><td>root, drop an executable script</td><td>root, no schedule fields needed</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        Modern distros often run this through <code>systemd</code> timers instead (<code>systemctl list-timers</code>) — same idea, more logging via <code>journalctl</code>, but classic cron is still everywhere.
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Cron's shell is not your shell</h2>
+      <p class="lede">This is the #1 source of "works when I run it, fails in cron." Cron jobs run <strong>non-interactive, non-login</strong> — see the bottom-right cell of the mode grid on the <a href="bash-vs-zsh.html">bash vs zsh page</a>: no <code>.bashrc</code>, no <code>.profile</code>, a bare-bones <code>PATH</code> (often just <code>/usr/bin:/bin</code>).</p>
+      <div class="tblwrap">
+        <table class="matrix">
+          <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td class="feat">"command not found"</td><td>use full paths (<code>/usr/bin/python3</code>) or set <code>PATH=</code> at the top of the crontab</td></tr>
+            <tr><td class="feat">script works manually, not in cron</td><td>don't rely on aliases, functions, or shell rc files — source what you need explicitly</td></tr>
+            <tr><td class="feat">no output visible</td><td>redirect: <code>* * * * * cmd >> /var/log/cmd.log 2>&1</code></td></tr>
+            <tr><td class="feat">too many "cron sent mail" emails</td><td>set <code>MAILTO=""</code> at the top, or redirect output instead</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block">
+      <span class="kicker">Part 2 · bash · awk · sed</span>
+      <h2>Three tools, three jobs</h2>
+      <p class="lede">A cron entry almost always ends up calling one of these — or all three chained with pipes.</p>
+      <div class="cols3">
+        <div class="toolcard bash">
+          <h3>bash</h3>
+          <div class="role">the glue — control flow, orchestration</div>
+          <pre>if [ -f "$lock" ]; then
+  exit 0
+fi
+touch "$lock"
+./backup.sh && rm "$lock"</pre>
+        </div>
+        <div class="toolcard awk">
+          <h3>awk</h3>
+          <div class="role">the columns — pattern → action over fields</div>
+          <pre>awk -F, '$3 > 100 {
+  sum += $3
+} END { print sum }' sales.csv</pre>
+        </div>
+        <div class="toolcard sed">
+          <h3>sed</h3>
+          <div class="role">the stream editor — line-by-line find & replace</div>
+          <pre>sed -i 's/DEBUG/INFO/g' app.log
+sed -n '10,20p' access.log</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Feature matrix</h2>
+      <div class="tblwrap">
+        <table class="matrix">
+          <thead><tr><th></th><th class="b">bash</th><th class="a">awk</th><th class="s">sed</th></tr></thead>
+          <tbody>
+            <tr><td class="feat">Paradigm</td><td>imperative scripting</td><td>pattern–action, field-oriented</td><td>stream editing, line-oriented</td></tr>
+            <tr><td class="feat">Unit of work</td><td>commands &amp; variables</td><td>records split into fields (<code>$1</code>, <code>$2</code>…)</td><td>lines matched by regex/address</td></tr>
+            <tr><td class="feat">Best for</td><td>control flow, calling other programs, conditionals, loops</td><td>columnar data: sums, counts, reformatting CSV/logs</td><td>quick substitutions, deletions, extracting line ranges</td></tr>
+            <tr><td class="feat">State / memory</td><td>full variables, arrays, functions</td><td>associative arrays, running totals across lines</td><td>pattern space + hold space only</td></tr>
+            <tr><td class="feat">Typical one-liner</td><td><code>for f in *.log; do …; done</code></td><td><code>awk '{print $1}' file</code></td><td><code>sed 's/foo/bar/' file</code></td></tr>
+            <tr><td class="feat">In-place edit</td><td>manual (temp file + mv)</td><td>needs a temp file / <code>-i</code> in gawk</td><td><code>sed -i</code> built in</td></tr>
+            <tr><td class="feat">Learning curve</td><td>moderate, huge surface</td><td>small language, steep for advanced use</td><td>small, but regex-heavy</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Same task, three ways</h2>
+
+      <div class="taskrow">
+        <div class="tasklabel">Print the 2nd column of a space-separated file</div>
+        <div class="diffgrid3">
+          <div class="diffcard bash">
+            <div class="who">bash</div>
+            <pre>while read -r a b _; do
+  echo "$b"
+done &lt; file.txt</pre>
+          </div>
+          <div class="diffcard awk">
+            <div class="who">awk</div>
+            <pre>awk '{print $2}' file.txt</pre>
+          </div>
+          <div class="diffcard sed">
+            <div class="who">sed</div>
+            <pre>sed -E 's/^\S+\s+(\S+).*/\1/' file.txt</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="taskrow">
+        <div class="tasklabel">Replace "staging" with "production" everywhere in a file</div>
+        <div class="diffgrid3">
+          <div class="diffcard bash">
+            <div class="who">bash</div>
+            <pre>content=$(&lt; file.txt)
+echo "${content//staging/production}" &gt; file.txt</pre>
+          </div>
+          <div class="diffcard awk">
+            <div class="who">awk</div>
+            <pre>awk '{gsub(/staging/,"production")
+print}' file.txt &gt; tmp &amp;&amp; mv tmp file.txt</pre>
+          </div>
+          <div class="diffcard sed">
+            <div class="who">sed</div>
+            <pre>sed -i 's/staging/production/g' file.txt</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="taskrow">
+        <div class="tasklabel">Sum a column of numbers</div>
+        <div class="diffgrid3">
+          <div class="diffcard bash">
+            <div class="who">bash</div>
+            <pre>sum=0
+while read -r n; do
+  (( sum += n ))
+done &lt; nums.txt
+echo "$sum"</pre>
+          </div>
+          <div class="diffcard awk">
+            <div class="who">awk</div>
+            <pre>awk '{s+=$1} END{print s}' nums.txt</pre>
+          </div>
+          <div class="diffcard sed">
+            <div class="who">sed</div>
+            <pre>— sed has no arithmetic;
+wrong tool for this job</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="verdict">
+      💡 In a real cron job these are usually chained: <b class="b">bash</b> checks a lock file and sets up the environment, pipes a log through <b class="s">sed</b> to strip noise, then through <b class="a">awk</b> to total up a column, and <b class="b">bash</b> mails or logs the result. None of them replace the others — pick the tool that matches the shape of the data: whole program → bash, columns/aggregation → awk, line-level text surgery → sed.
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>Part of <a href="https://github.com/skybytescode/skillbox">SkillBox</a> · Test yourself in the <a href="./">quiz</a></p>
+  </footer>
+</body>
+</html>
