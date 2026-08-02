@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Introducere în Sisteme de Operare · SkillBox</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button id="menuBtn" class="menu-btn" aria-label="Meniu">☰</button>
+      <div class="brand">📘 <span>Introducere în Sisteme de Operare</span></div>
+    </div>
+    <nav>
+      <a href="#/">Curs</a>
+      <a href="../">🚀 SkillBox</a>
+    </nav>
+  </div>
+
+  <!-- Landing / course overview -->
+  <main id="landing" class="wrap">
+    <div class="hero">
+      <h1>Introducere în Sisteme de Operare</h1>
+      <p>Cursul complet, în format interactiv: 15 capitole, exemple de linie de comandă,
+         capturi de ecran din carte și un test de verificare la finalul fiecărui capitol.</p>
+      <div class="overall-progress">
+        <div class="bar"><div id="overallBar" style="width:0%"></div></div>
+        <div class="label" id="overallLabel">0% parcurs</div>
+      </div>
+      <p class="foreword-toggle"><a href="#" id="forewordToggle">Citește cuvântul înainte al autorilor →</a></p>
+    </div>
+    <div id="forewordBox" class="foreword-box hidden">
+      <h2>Cuvânt înainte</h2>
+      <div id="forewordText"></div>
+    </div>
+    <div id="chapterList" class="chapter-list"></div>
+  </main>
+
+  <!-- Course/step view -->
+  <div id="courseView" class="course-shell hidden">
+    <aside id="sidebar" class="sidebar"></aside>
+    <div id="contentPane" class="content-pane">
+      <div class="progress-bar"><div id="stepProgressBar" style="width:0%"></div></div>
+      <div class="crumb" id="crumb"></div>
+      <div id="stepContent"></div>
+      <div class="step-nav">
+        <button id="prevBtn" class="btn">← Înapoi</button>
+        <button id="homeBtn" class="btn">🏠 Curs</button>
+        <button id="nextBtn" class="btn primary">Continuă →</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
