@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sisteme de fișiere · Ghid complet · SkillBox</title>
+  <style>
+    :root {
+      --bg: #0f1420; --panel: #171e2e; --panel-2: #1f293d;
+      --text: #e6ecf5; --muted: #93a1bd; --accent: #4f8cff; --accent-2: #2ee6a6;
+      --code: #ffd479; --border: #2a3550; --radius: 14px; --danger: #ff5d6c;
+      --root: #f9d29a; --root-b: #e0a95e;
+      --blue: #cfe0fb; --blue-b: #8fb4ef; --blue-t: #1b2b4a;
+      --green: #cfeccc; --green-b: #8fcf8a; --green-t: #1c3a1a;
+      --purple: #ddd0f7; --purple-b: #b79cf0; --purple-t: #2a1c4a;
+      --pink: #f7d0e6; --pink-b: #e79cc8; --pink-t: #4a1c34;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -200px, #1b2540 0%, var(--bg) 60%);
+      color: var(--text); line-height: 1.7; min-height: 100vh;
+    }
+    a { color: var(--accent); }
+    code {
+      font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+      color: var(--code); background: #0d1320; padding: 2px 6px;
+      border-radius: 5px; border: 1px solid var(--border); font-size: .88em;
+    }
+    pre {
+      background: #0b0f18; border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 16px; overflow-x: auto; margin: 12px 0;
+      font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace; font-size: .85rem;
+    }
+    pre code { border: none; padding: 0; background: none; }
+
+    .site-header { padding: 40px 0 6px; text-align: center; }
+    .site-header h1 { margin: 0; font-size: 2rem; letter-spacing: -0.5px; }
+    .site-header h1 span { color: var(--accent); }
+    .tagline { color: var(--muted); margin: 8px 0 0; max-width: 680px; margin-left: auto; margin-right: auto; padding: 0 20px; }
+    .nav { margin-top: 12px; font-size: .9rem; }
+    .nav a { text-decoration: none; margin: 0 8px; }
+    .nav a:hover { text-decoration: underline; }
+
+    .layout { max-width: 1080px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 240px 1fr; gap: 30px; }
+    @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } .toc { position: static !important; } }
+
+    .toc { position: sticky; top: 20px; align-self: start; font-size: .87rem; max-height: calc(100vh - 40px); overflow-y: auto; }
+    .toc h3 { color: var(--muted); text-transform: uppercase; font-size: .72rem; letter-spacing: .6px; margin: 0 0 10px; }
+    .toc ol { list-style: none; margin: 0; padding: 0; }
+    .toc li { margin: 2px 0; }
+    .toc a { display: block; padding: 5px 10px; border-radius: 8px; text-decoration: none; color: var(--muted); border-left: 2px solid transparent; }
+    .toc a:hover { background: var(--panel); color: var(--text); }
+    .toc a.active { color: var(--text); border-left-color: var(--accent); background: var(--panel); }
+
+    article { min-width: 0; }
+    section {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 26px 30px; margin: 0 0 20px;
+      scroll-margin-top: 20px;
+    }
+    section h2 { margin-top: 0; font-size: 1.4rem; }
+    section h2 .num { color: var(--accent); margin-right: 8px; }
+    section h3 { font-size: 1.08rem; margin: 22px 0 8px; color: var(--accent-2); }
+    p { margin: 10px 0; }
+    ul, ol.plain { margin: 10px 0; padding-left: 22px; }
+    li { margin: 5px 0; }
+    .note {
+      border-left: 3px solid var(--accent-2); background: var(--panel-2);
+      padding: 10px 14px; border-radius: 0 10px 10px 0; margin: 14px 0; font-size: .93rem;
+    }
+    .warn { border-left-color: var(--danger); }
+    table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: .89rem; display: block; overflow-x: auto; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: normal; }
+    th { color: var(--muted); font-weight: 600; }
+
+    .diagram { background: #0c111c; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 16px 0; overflow-x: auto; }
+    .diagram .cap { text-align: center; color: var(--muted); font-size: .78rem; margin-top: 10px; }
+
+    .chip {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 7px 12px; border-radius: 8px; font-family: "SF Mono", Menlo, monospace;
+      font-size: .82rem; font-weight: 600; border: 1.5px solid;
+    }
+    .chip.blue { background: var(--blue); border-color: var(--blue-b); color: var(--blue-t); }
+    .chip.green { background: var(--green); border-color: var(--green-b); color: var(--green-t); }
+    .chip.root { background: var(--root); border-color: var(--root-b); color: #5a3d12; }
+    .chip.purple { background: var(--purple); border-color: var(--purple-b); color: var(--purple-t); }
+    .chip.pink { background: var(--pink); border-color: var(--pink-b); color: var(--pink-t); }
+
+    .subgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 12px; }
+    @media (max-width: 700px) { .subgrid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 460px) { .subgrid { grid-template-columns: 1fr; } }
+    .subcard { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .subcard .label { font-family: monospace; color: var(--accent-2); font-weight: 700; margin-bottom: 6px; }
+    .subcard p { margin: 0; font-size: .85rem; color: var(--muted); }
+
+    /* OS badge cards used as a quick-jump grid in the intro */
+    .oscards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 14px; }
+    @media (max-width: 760px) { .oscards { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 460px) { .oscards { grid-template-columns: repeat(2, 1fr); } }
+    .oscard {
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 10px; text-align: center; text-decoration: none; color: var(--text);
+      transition: border-color .15s, transform .15s;
+    }
+    .oscard:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .oscard .ic { font-size: 1.6rem; display: block; margin-bottom: 6px; }
+    .oscard .n { font-size: .82rem; font-weight: 600; }
+
+    /* permission bit visualizer */
+    .permrow { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 10px 0; font-family: monospace; }
+    .permrow .bit { padding: 6px 10px; border-radius: 6px; border: 1.5px solid var(--border); background: #0d1320; font-size: .85rem; }
+    .permrow .bit.on { border-color: var(--accent-2); color: var(--accent-2); }
+
+    .site-footer { text-align: center; padding: 20px 0 40px; color: var(--muted); font-size: .82rem; }
+    .site-footer a { text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <h1>🗂️ Sisteme de <span>fișiere</span></h1>
+    <p class="tagline">Ghid complet și detaliat despre organizarea fișierelor, structura de directoare, sistemele de fișiere native, permisiuni și particularități pe Linux, Windows, macOS, Android și iOS.</p>
+    <nav class="nav">
+      <a href="./">🚀 DevOps Quiz</a> ·
+      <a href="kernel.html">🧠 Linux Kernel</a> ·
+      <a href="linux-theory.html">📖 Linux Theory</a> ·
+      <a href="linux.html">📋 Commands Memo</a> ·
+      <a href="find.html">📂 find Memo</a> ·
+      <a href="https://github.com/skybytescode/skillbox">⭐ GitHub</a>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside class="toc">
+      <h3>Cuprins</h3>
+      <ol id="toc"></ol>
+    </aside>
+
+    <article>
+
+      <section id="intro">
+        <h2><span class="num">1</span>Ce este un sistem de fișiere?</h2>
+        <p>Un <strong>sistem de fișiere</strong> (filesystem) este structura de date și setul de reguli prin care un sistem de operare organizează, denumește, stochează și regăsește informația pe un suport de stocare (SSD, HDD, card SD, memorie flash). El răspunde la trei întrebări fundamentale: <em>unde</em> este stocat fiecare bloc de date, <em>cum</em> se numesc și se organizează fișierele/directoarele, și <em>cine</em> are voie să le acceseze.</p>
+        <div class="subgrid">
+          <div class="subcard"><div class="label">Fișier</div><p>O secvență de octeți cu un nume, stocată ca unitate. Are conținut (datele propriu-zise) și metadate (dimensiune, dată, proprietar, permisiuni).</p></div>
+          <div class="subcard"><div class="label">Director / folder</div><p>Un fișier special care conține o listă de intrări (nume → alt fișier sau director), formând o structură arborescentă (ierarhică).</p></div>
+          <div class="subcard"><div class="label">Cale (path)</div><p>Adresa unui fișier în arbore: absolută (de la rădăcină) sau relativă (de la directorul curent).</p></div>
+          <div class="subcard"><div class="label">Metadate</div><p>Informații despre fișier, separate de conținut: dimensiune, timestamp-uri, proprietar, permisiuni, atribute (ascuns, doar-citire etc).</p></div>
+          <div class="subcard"><div class="label">Inode / MFT record</div><p>Structura internă care leagă un nume de fișier de locația reală a datelor pe disc (inode pe Unix/Linux, MFT record pe NTFS).</p></div>
+          <div class="subcard"><div class="label">Jurnalizare (journaling)</div><p>Tehnică prin care sistemul de fișiere scrie mai întâi într-un jurnal ce urmează să facă, pentru a se putea recupera după o cădere bruscă de curent.</p></div>
+        </div>
+        <p>Deși principiile sunt universale, fiecare familie de sisteme de operare a dezvoltat propriile convenții de organizare și propriile sisteme de fișiere native, optimizate pentru cazul ei de utilizare. Sări direct la un capitol:</p>
+        <div class="oscards">
+          <a class="oscard" href="#linux"><span class="ic">🐧</span><span class="n">Linux</span></a>
+          <a class="oscard" href="#windows"><span class="ic">🪟</span><span class="n">Windows</span></a>
+          <a class="oscard" href="#macos"><span class="ic">🍎</span><span class="n">macOS</span></a>
+          <a class="oscard" href="#android"><span class="ic">🤖</span><span class="n">Android</span></a>
+          <a class="oscard" href="#ios"><span class="ic">📱</span><span class="n">iOS</span></a>
+        </div>
+      </section>
+
+      <section id="linux">
+        <h2><span class="num">2</span>Linux — structura ierarhică de fișiere</h2>
+        <p>Linux (ca orice Unix) folosește un <strong>singur arbore de directoare</strong>, cu rădăcina notată <code>/</code>. Nu există litere de unitate ca în Windows — discuri, partiții, USB-uri sau chiar sisteme de fișiere de rețea sunt toate <strong>montate</strong> (mount) ca subdirectoare în acest arbore unic. Organizarea directoarelor standard este definită de <strong>FHS — Filesystem Hierarchy Standard</strong>.</p>
+        <div class="diagram">
+<pre><code>/
+├── bin, sbin      → executabile esențiale (azi, de regulă link către /usr/bin)
+├── boot           → kernel (vmlinuz), initramfs, GRUB
+├── dev            → fișiere de dispozitiv (/dev/sda, /dev/null, /dev/tty)
+├── etc            → fișiere de configurare la nivel de sistem
+├── home           → directoarele personale ale utilizatorilor (/home/ana)
+├── lib, lib64     → biblioteci partajate necesare pentru /bin și /sbin
+├── media, mnt     → puncte de montare pentru medii amovibile / temporare
+├── opt            → software opțional, terță parte, autonom
+├── proc           → pseudo-sistem de fișiere: informații live despre procese/kernel
+├── root           → directorul personal al utilizatorului root
+├── run            → date volatile de runtime (PID-uri, socket-uri), pierdute la reboot
+├── srv            → date pentru servicii găzduite pe mașină (ex: site-uri web)
+├── sys            → pseudo-sistem de fișiere: informații despre kernel/hardware
+├── tmp            → fișiere temporare, șterse de obicei la reboot
+├── usr            → programe, biblioteci, documentație "userland" (partea cea mai mare)
+└── var            → date variabile: loguri (/var/log), cache, cozi de mail, baze de date</code></pre>
+        </div>
+        <div class="note">💡 <code>/proc</code> și <code>/sys</code> nu ocupă spațiu real pe disc — sunt "ferestre" virtuale generate de kernel la citire, folosite pentru introspecție (<code>cat /proc/cpuinfo</code>, <code>cat /proc/meminfo</code>).</div>
+
+        <h3>Sisteme de fișiere native</h3>
+        <table>
+          <tr><th>Sistem de fișiere</th><th>Caracteristici</th></tr>
+          <tr><td><strong>ext4</strong></td><td>Implicit pe majoritatea distribuțiilor (Ubuntu, Debian). Jurnalizat, matur, stabil, suportă volume de până la 1 EiB.</td></tr>
+          <tr><td><strong>Btrfs</strong></td><td>Copy-on-write, snapshot-uri native, subvolume, compresie transparentă, RAID software integrat. Implicit pe openSUSE și Fedora Workstation (parțial).</td></tr>
+          <tr><td><strong>XFS</strong></td><td>Foarte performant pe fișiere mari și paralelism ridicat; implicit pe RHEL/CentOS.</td></tr>
+          <tr><td><strong>ZFS</strong></td><td>Combină filesystem + volume manager: snapshot-uri, deduplicare, checksum-uri end-to-end. Popular pe servere de storage (adesea prin OpenZFS).</td></tr>
+          <tr><td><strong>F2FS</strong></td><td>Optimizat pentru memorie flash (SSD/eMMC) — folosit pe unele dispozitive Android.</td></tr>
+        </table>
+
+        <h3>Permisiuni: model rwx (owner / group / others)</h3>
+        <p>Fiecare fișier are un <strong>proprietar</strong>, un <strong>grup</strong> și permisiuni separate pentru trei categorii de utilizatori: proprietar (<code>u</code>), grup (<code>g</code>) și restul (<code>o</code>). Pentru fiecare categorie există trei drepturi: <strong>r</strong>ead, <strong>w</strong>rite, e<strong>x</strong>ecute.</p>
+        <div class="permrow">
+          <span class="bit on">r</span><span class="bit on">w</span><span class="bit on">x</span>
+          <span class="bit on">r</span><span class="bit">-</span><span class="bit on">x</span>
+          <span class="bit on">r</span><span class="bit">-</span><span class="bit">-</span>
+          <span>= <code>rwxr-xr--</code> = <code>754</code> (owner: citește/scrie/execută, grup: citește/execută, alții: doar citește)</span>
+        </div>
+        <pre><code>chmod 755 script.sh      # rwxr-xr-x, numeric
+chmod u+x script.sh       # adaugă execuție doar proprietarului, simbolic
+chown ana:staff fisier    # schimbă proprietarul și grupul
+chmod +t /tmp             # sticky bit: doar proprietarul poate șterge fișierul din director</code></pre>
+        <div class="note">🔐 Pe un director, <code>x</code> înseamnă "poți intra/traversa" (<code>cd</code>), nu "poți executa". Fără <code>x</code> pe director, nu poți accesa fișierele din el chiar dacă ai <code>r</code>.</div>
+
+        <h3>Legături, fișiere ascunse și puncte de montare</h3>
+        <ul>
+          <li><strong>Hard link</strong> (<code>ln</code>) — un al doilea nume pentru <em>același</em> inode; fișierul dispare fizic doar când ultimul nume care îl referă este șters.</li>
+          <li><strong>Symlink</strong> (<code>ln -s</code>) — un fișier special ce conține o cale către alt fișier; se poate rupe dacă ținta e mutată/ștearsă.</li>
+          <li><strong>Fișiere ascunse</strong> — orice nume care începe cu punct (<code>.bashrc</code>, <code>.config</code>); nu e un atribut separat, e doar convenție, ascunsă de <code>ls</code> fără <code>-a</code>.</li>
+          <li><strong>Mount points</strong> — un disc nou nu apare ca literă separată, ci "grefat" într-un director existent (<code>mount /dev/sdb1 /mnt/date</code>).</li>
+        </ul>
+      </section>
+
+      <section id="windows">
+        <h2><span class="num">3</span>Windows — litere de unitate și NTFS</h2>
+        <p>Windows folosește un model cu <strong>litere de unitate</strong> (<code>C:</code>, <code>D:</code>...): fiecare partiție sau disc are propriul arbore de directoare, nu există o rădăcină unică pentru tot sistemul. Separatorul de cale este backslash-ul <code>\</code> (deși API-urile moderne acceptă și <code>/</code>).</p>
+        <div class="diagram">
+<pre><code>C:\
+├── Windows                → sistemul de operare propriu-zis
+│   └── System32           → executabile și DLL-uri critice de sistem
+├── Program Files           → aplicații pe 64 de biți
+├── Program Files (x86)     → aplicații pe 32 de biți (compatibilitate)
+├── ProgramData              → date partajate ale aplicațiilor, ascuns implicit
+├── Users
+│   └── NumeUtilizator
+│       ├── Desktop, Documents, Downloads, Pictures...
+│       └── AppData
+│           ├── Local       → date locale mașinii, nu se sincronizează
+│           ├── LocalLow    → date cu nivel scăzut de integritate (ex: sandbox browser)
+│           └── Roaming     → date care urmăresc profilul, se pot sincroniza în rețea
+└── System Volume Information → date interne de restaurare a sistemului</code></pre>
+        </div>
+        <h3>Sisteme de fișiere native</h3>
+        <table>
+          <tr><th>Sistem de fișiere</th><th>Caracteristici</th></tr>
+          <tr><td><strong>NTFS</strong></td><td>Implicit pentru discul de sistem. Jurnalizat, suportă permisiuni ACL detaliate, compresie, criptare (EFS), cote de disc, fișiere de până la 16 TB, nume până la 255 caractere.</td></tr>
+          <tr><td><strong>exFAT</strong></td><td>Fără jurnalizare, fără permisiuni complexe; folosit pe stick-uri USB și carduri SD pentru compatibilitate cross-platform (Windows/macOS/Linux/camere/console).</td></tr>
+          <tr><td><strong>FAT32</strong></td><td>Vechi, dar universal compatibil; limitat la fișiere de max. 4 GB și volume de 32 GB (formatare nativă Windows).</td></tr>
+          <tr><td><strong>ReFS</strong></td><td>"Resilient File System" — mai nou, orientat spre integritate a datelor (checksum-uri automate); folosit mai ales pe Windows Server și Storage Spaces.</td></tr>
+        </table>
+        <h3>Permisiuni: ACL, nu doar rwx</h3>
+        <p>NTFS folosește <strong>liste de control al accesului (ACL)</strong>: fiecare fișier poate avea reguli separate pentru oricâți utilizatori sau grupuri, nu doar trei categorii ca pe Unix. Drepturile includ Read, Write, Modify, Read &amp; Execute, List folder contents, Full control — și pot fi <em>Allow</em> sau <em>Deny</em> explicit.</p>
+        <pre><code>icacls fisier.txt /grant Ana:(R,W)      # acordă citire/scriere userului Ana
+icacls fisier.txt /remove Ana           # elimină regula
+attrib +h +s fisier.txt                 # marchează fișier ca ascuns + sistem
+dir /a                                  # listează inclusiv fișierele ascunse</code></pre>
+        <div class="note">💡 Spre deosebire de Linux, pe Windows "fișier ascuns" este un <strong>atribut real</strong> stocat în metadate (<code>Hidden</code>), setat cu <code>attrib +h</code>, nu doar o convenție de denumire.</div>
+        <h3>Legături pe NTFS</h3>
+        <ul>
+          <li><strong>Shortcut (.lnk)</strong> — fișier obișnuit interpretat de Explorer, nu o legătură reală la nivel de filesystem.</li>
+          <li><strong>Symbolic link</strong> (<code>mklink</code>) — echivalentul symlink-ului Unix, disponibil din Windows Vista încoace.</li>
+          <li><strong>Junction</strong> (<code>mklink /J</code>) — leagă un director de altul, dar funcționează doar local, pe același volum sau computer.</li>
+        </ul>
+      </section>
+
+      <section id="macos">
+        <h2><span class="num">4</span>macOS — un Unix cu pachete de aplicații</h2>
+        <p>macOS este construit pe <strong>Darwin</strong>, un nucleu de tip Unix (XNU) — de aceea structura de bază seamănă cu Linux: un singur arbore, rădăcină <code>/</code>, permisiuni POSIX rwx. Discurile suplimentare apar montate în <code>/Volumes</code>, nu ca litere separate.</p>
+        <div class="diagram">
+<pre><code>/
+├── Applications      → aplicații instalate pentru toți utilizatorii (.app bundles)
+├── System            → fișierele sistemului de operare (protejate, read-only de SIP)
+│   └── Volumes/Data  → pe macOS modern, datele scriptibile sunt pe un volum separat
+├── Library           → preferințe, cache, plugin-uri partajate la nivel de sistem
+├── Users
+│   └── NumeUtilizator
+│       ├── Desktop, Documents, Downloads, Movies, Pictures...
+│       └── Library    → preferințe și date specifice userului (ascuns implicit)
+├── Volumes           → puncte de montare pentru discuri externe/imagini
+└── private/etc, /private/var → configurări și date variabile (linkuri: /etc → /private/etc)</code></pre>
+        </div>
+        <h3>Sisteme de fișiere native</h3>
+        <table>
+          <tr><th>Sistem de fișiere</th><th>Caracteristici</th></tr>
+          <tr><td><strong>APFS</strong> (Apple File System)</td><td>Implicit din 2017 pe SSD/Mac moderne. Copy-on-write, snapshot-uri instant, criptare nativă per-volum, clonare instantanee de fișiere, spațiu partajat între "volume container".</td></tr>
+          <tr><td><strong>HFS+</strong></td><td>Sistemul de fișiere clasic Mac, precursor al APFS; încă întâlnit pe discuri mai vechi sau medii de recuperare.</td></tr>
+        </table>
+        <h3>Pachete .app și atribute extinse</h3>
+        <p>O aplicație macOS (<code>Safari.app</code>) nu e un singur executabil, ci un <strong>director "pachet" (bundle)</strong> care conține binarul, resursele, iconițele și metadatele — Finder îl afișează ca un singur fișier, dar <code>ls</code> în terminal arată structura reală (<code>Contents/MacOS</code>, <code>Contents/Resources</code>, <code>Info.plist</code>).</p>
+        <p>macOS folosește pe scară largă <strong>atributele extinse (xattrs)</strong> — metadate suplimentare atașate oricărui fișier, invizibile în majoritatea uneltelor: tag-uri Finder, comentarii, sau flag-ul <code>com.apple.quarantine</code> pus pe fișierele descărcate din internet (motiv pentru avertismentul Gatekeeper la prima rulare).</p>
+        <pre><code>chmod 644 fisier.txt        # POSIX rwx, la fel ca pe Linux
+xattr -l fisier.txt         # listează atributele extinse
+xattr -d com.apple.quarantine fisier.txt   # scoate carantina descărcărilor
+ls -la ~/                   # arată și fișierele ascunse (.bash_profile, .ssh...)</code></pre>
+        <div class="note">🔒 <strong>System Integrity Protection (SIP)</strong> face <code>/System</code> read-only chiar și pentru root, prevenind modificarea fișierelor critice de malware sau greșeli ale utilizatorului.</div>
+      </section>
+
+      <section id="android">
+        <h2><span class="num">5</span>Android — Linux cu sandbox pe fiecare aplicație</h2>
+        <p>Android rulează pe un <strong>kernel Linux</strong> real, deci moștenește permisiunile POSIX și un arbore unic de directoare — dar adaugă un strat puternic de izolare: fiecare aplicație rulează cu propriul <strong>UID Linux unic</strong>, ceea ce o transformă practic într-un "utilizator" separat pentru sistemul de fișiere.</p>
+        <div class="diagram">
+<pre><code>/
+├── system            → SO-ul Android propriu-zis, read-only (partiție /system)
+├── data
+│   ├── data/com.app.exemplu   → sandbox privat al fiecărei aplicații (owner = UID-ul ei)
+│   └── ...
+├── sdcard → storage/emulated/0   → stocarea "partajată", vizibilă în Files/Galerie
+│   ├── DCIM, Download, Pictures, Android/data/...
+├── vendor            → drivere și blob-uri specifice producătorului de hardware
+└── proc, sys, dev    → identice conceptual cu Linux desktop</code></pre>
+        </div>
+        <h3>Scoped storage și sandboxing</h3>
+        <ul>
+          <li><strong>Sandbox privat</strong> (<code>/data/data/&lt;pachet&gt;</code>) — accesibil doar aplicației proprietare (și root, pe dispozitive rootate); alte aplicații nu pot citi datele fără permisiune explicită.</li>
+          <li><strong>Scoped storage</strong> (Android 10+) — aplicațiile nu mai văd liber tot stocajul partajat; trebuie să ceară acces prin API-uri de sistem (Storage Access Framework) sau se limitează la propriul director <code>Android/data/&lt;pachet&gt;</code>.</li>
+          <li><strong>Permisiuni runtime</strong> — accesul la stocarea partajată (fotografii, fișiere) e cerut explicit userului la runtime, nu doar declarat static în manifest.</li>
+        </ul>
+        <h3>Sisteme de fișiere</h3>
+        <table>
+          <tr><th>Sistem de fișiere</th><th>Utilizare</th></tr>
+          <tr><td><strong>ext4</strong></td><td>Cel mai comun pentru partiția <code>/data</code> pe dispozitive mai vechi.</td></tr>
+          <tr><td><strong>F2FS</strong></td><td>Optimizat pentru memorie flash NAND, tot mai des implicit pe telefoane moderne.</td></tr>
+          <tr><td><strong>exFAT / FAT32</strong></td><td>Pe carduri microSD amovibile, pentru compatibilitate cu alte dispozitive/PC.</td></tr>
+        </table>
+        <div class="note">💡 Fără root, nu poți naviga în <code>/data/data/altapp</code> nici măcar cu un file manager — sandboxing-ul e impus de kernel prin UID-uri, exact ca separarea dintre utilizatori pe Linux desktop.</div>
+      </section>
+
+      <section id="ios">
+        <h2><span class="num">6</span>iOS / iPadOS — fără sistem de fișiere vizibil global</h2>
+        <p>iOS rulează tot pe Darwin/XNU și pe <strong>APFS</strong>, la fel ca macOS, dar filosofia e radical diferită: nu există, în mod normal, acces la un arbore global de fișiere. Fiecare aplicație trăiește într-un <strong>container sandbox</strong> propriu, complet izolat de containerele celorlalte aplicații.</p>
+        <div class="diagram">
+<pre><code>/var/containers/Bundle/Application/&lt;UUID&gt;/AppExemplu.app   → codul aplicației (read-only)
+/var/mobile/Containers/Data/Application/&lt;UUID&gt;/
+├── Documents/     → date create de user, incluse în backup
+├── Library/
+│   ├── Preferences/   → UserDefaults / setări
+│   └── Caches/        → date temporare, NU incluse în backup
+└── tmp/                → șterse periodic de sistem</code></pre>
+        </div>
+        <h3>Cum interacționează utilizatorul cu fișierele</h3>
+        <ul>
+          <li><strong>Aplicația Files</strong> — oferă o vedere unificată peste "On My iPhone/iPad" (stocarea locală expusă intenționat de aplicații) + <strong>iCloud Drive</strong> + furnizori terți (Google Drive, Dropbox) prin Document Provider API.</li>
+          <li><strong>Fără Finder/Explorer clasic</strong> — nu poți naviga liber în containerul altei aplicații sau în fișierele de sistem, nici măcar ca proprietar al dispozitivului, fără jailbreak.</li>
+          <li><strong>iCloud Drive</strong> — sincronizare la nivel de fișier, cu descărcare "la cerere" (fișierele pot exista doar ca metadate locale, cu conținutul păstrat în cloud până la accesare).</li>
+          <li><strong>App Groups</strong> — singura excepție de partajare: aplicații ale aceluiași dezvoltator pot partaja explicit un container comun (ex: aplicația principală și widget-ul ei).</li>
+        </ul>
+        <div class="note">🔐 Această izolare extremă e motivul pentru care iOS are un istoric de malware mult mai redus decât desktop-urile tradiționale — o aplicație compromisă nu poate, în mod normal, citi datele alteia.</div>
+      </section>
+
+      <section id="comparatie">
+        <h2><span class="num">7</span>Comparație directă între sisteme</h2>
+        <table>
+          <tr><th></th><th>🐧 Linux</th><th>🪟 Windows</th><th>🍎 macOS</th><th>🤖 Android</th><th>📱 iOS</th></tr>
+          <tr><td>Rădăcină</td><td><code>/</code> unică</td><td>literă per volum (<code>C:</code>)</td><td><code>/</code> unică</td><td><code>/</code> unică</td><td>ascunsă de utilizator</td></tr>
+          <tr><td>Separator cale</td><td><code>/</code></td><td><code>\</code> (acceptă și <code>/</code>)</td><td><code>/</code></td><td><code>/</code></td><td><code>/</code> (intern)</td></tr>
+          <tr><td>Case-sensitive?</td><td>Da</td><td>Nu (dar păstrează forma)</td><td>De obicei nu (APFS implicit case-insensitive)</td><td>Da</td><td>Da</td></tr>
+          <tr><td>Sistem de fișiere implicit</td><td>ext4 / Btrfs / XFS</td><td>NTFS</td><td>APFS</td><td>ext4 / F2FS</td><td>APFS</td></tr>
+          <tr><td>Model de permisiuni</td><td>POSIX rwx (u/g/o)</td><td>ACL (Windows)</td><td>POSIX + ACL + xattrs</td><td>POSIX + UID per-app</td><td>Sandbox per-app, fără acces user direct</td></tr>
+          <tr><td>Fișiere ascunse</td><td>convenție: nume cu <code>.</code></td><td>atribut real "Hidden"</td><td>convenție <code>.</code> + atribut</td><td>convenție: nume cu <code>.</code></td><td>nu se aplică (containere)</td></tr>
+          <tr><td>Caractere interzise în nume</td><td><code>/</code> și NUL</td><td><code>\ / : * ? " &lt; &gt; |</code></td><td><code>:</code> și <code>/</code></td><td><code>/</code> și NUL</td><td>gestionat de sistem</td></tr>
+          <tr><td>Acces liber utilizator la fișiere de sistem</td><td>Da (root)</td><td>Da (Administrator)</td><td>Limitat (SIP protejează <code>/System</code>)</td><td>Nu, fără root</td><td>Nu, fără jailbreak</td></tr>
+        </table>
+        <div class="note">📏 Lungimea maximă a unei căi: 4096 octeți pe Linux (per componentă 255), tradițional 260 caractere pe Windows (eliminat cu <code>LongPathsEnabled</code> din Windows 10), 1024 pe macOS/APFS.</div>
+      </section>
+
+      <section id="glosar">
+        <h2><span class="num">8</span>Glosar de concepte comune</h2>
+        <div class="subgrid">
+          <div class="subcard"><div class="label">Symlink</div><p>Fișier care conține doar o cale către alt fișier/director; se poate "rupe" dacă ținta dispare. Disponibil pe toate cele 5 sisteme.</p></div>
+          <div class="subcard"><div class="label">Hard link</div><p>Al doilea nume pentru exact aceleași date pe disc (același inode/MFT record). Nu există pentru directoare pe majoritatea sistemelor.</p></div>
+          <div class="subcard"><div class="label">Inode / MFT</div><p>Structura care ține metadatele unui fișier separat de numele lui — de aceea poți redenumi un fișier fără să-i muți conținutul.</p></div>
+          <div class="subcard"><div class="label">Jurnalizare</div><p>Scriere prealabilă într-un jurnal a operațiilor planificate, pentru recuperare rapidă și consistentă după o cădere de curent (ext4, NTFS, APFS, HFS+ toate jurnalizează).</p></div>
+          <div class="subcard"><div class="label">Copy-on-write (CoW)</div><p>La modificare, se scrie un bloc nou în loc să se suprascrie cel vechi — stă la baza snapshot-urilor instant (Btrfs, ZFS, APFS).</p></div>
+          <div class="subcard"><div class="label">Extensie de fișier</div><p>Sufixul după ultimul punct (<code>.txt</code>, <code>.app</code>) — convenție pentru a asocia tipul de conținut cu o aplicație; Linux nu se bazează pe ea (folosește magic bytes), Windows/macOS/iOS/Android o folosesc frecvent, dar nu exclusiv.</p></div>
+          <div class="subcard"><div class="label">Sandbox / container</div><p>Izolarea unei aplicații într-un spațiu propriu de fișiere, cu acces restricționat în afara lui — model central pe Android și iOS, opțional pe desktop (Flatpak, Snap, App Sandbox macOS).</p></div>
+          <div class="subcard"><div class="label">Mount / montare</div><p>Procesul prin care un sistem de fișiere (disc, partiție, imagine, share de rețea) devine vizibil într-un punct din arborele de directoare.</p></div>
+        </div>
+      </section>
+
+      <section id="comenzi">
+        <h2><span class="num">9</span>Comenzi practice, pe scurt</h2>
+        <table>
+          <tr><th>Acțiune</th><th>Linux / macOS</th><th>Windows (cmd / PowerShell)</th></tr>
+          <tr><td>Listează directorul</td><td><code>ls -la</code></td><td><code>dir /a</code> · <code>Get-ChildItem -Force</code></td></tr>
+          <tr><td>Schimbă permisiuni</td><td><code>chmod 755 fisier</code></td><td><code>icacls fisier /grant User:F</code></td></tr>
+          <tr><td>Schimbă proprietarul</td><td><code>chown user:grup fisier</code></td><td><code>takeown /F fisier</code></td></tr>
+          <tr><td>Creează symlink</td><td><code>ln -s tinta link</code></td><td><code>mklink link tinta</code></td></tr>
+          <tr><td>Caută fișiere</td><td><code>find / -name "*.log"</code></td><td><code>Get-ChildItem -Recurse -Filter *.log</code></td></tr>
+          <tr><td>Spațiu ocupat de un director</td><td><code>du -sh dir/</code></td><td><code>Get-ChildItem -Recurse | Measure-Object -Property Length -Sum</code></td></tr>
+          <tr><td>Info sistem de fișiere</td><td><code>df -h</code> / <code>mount</code></td><td><code>Get-Volume</code> / Disk Management</td></tr>
+        </table>
+        <p>Pe <strong>Android</strong>, uneltele echivalente sunt disponibile prin <code>adb shell</code> (are un shell Linux complet, <code>ls</code>, <code>chmod</code>, <code>find</code> funcționează identic). Pe <strong>iOS</strong>, fără jailbreak, singura interacțiune directă este prin aplicația Files sau prin API-urile aplicațiilor înseși — nu există un shell de sistem accesibil userului obișnuit.</p>
+      </section>
+
+    </article>
+  </div>
+
+  <footer class="site-footer">
+    <p>Part of <a href="https://github.com/skybytescode/skillbox">SkillBox</a> · Vezi și <a href="kernel.html">Linux Kernel</a> și <a href="linux-theory.html">Linux Theory</a> · Testează-te în <a href="./">quiz</a></p>
+  </footer>
+
+  <script>
+    const toc = document.getElementById("toc");
+    const sections = [...document.querySelectorAll("article section")];
+    for (const s of sections) {
+      const h = s.querySelector("h2");
+      const title = h.textContent.replace(/^\d+/, "").trim();
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = "#" + s.id;
+      a.textContent = title;
+      a.dataset.id = s.id;
+      li.appendChild(a);
+      toc.appendChild(li);
+    }
+    const links = new Map([...toc.querySelectorAll("a")].map((a) => [a.dataset.id, a]));
+    const observer = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          links.forEach((a) => a.classList.remove("active"));
+          links.get(e.target.id)?.classList.add("active");
+        }
+      }
+    }, { rootMargin: "-10% 0px -75% 0px" });
+    sections.forEach((s) => observer.observe(s));
+  </script>
+</body>
+</html>
