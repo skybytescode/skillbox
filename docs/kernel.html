@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Linux Kernel · Ghid complet · SkillBox</title>
+  <style>
+    :root {
+      --bg: #0f1420; --panel: #171e2e; --panel-2: #1f293d;
+      --text: #e6ecf5; --muted: #93a1bd; --accent: #4f8cff; --accent-2: #2ee6a6;
+      --code: #ffd479; --border: #2a3550; --radius: 14px; --danger: #ff5d6c;
+      --root: #f9d29a; --root-b: #e0a95e;
+      --blue: #cfe0fb; --blue-b: #8fb4ef; --blue-t: #1b2b4a;
+      --green: #cfeccc; --green-b: #8fcf8a; --green-t: #1c3a1a;
+      --purple: #ddd0f7; --purple-b: #b79cf0; --purple-t: #2a1c4a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -200px, #1b2540 0%, var(--bg) 60%);
+      color: var(--text); line-height: 1.7; min-height: 100vh;
+    }
+    a { color: var(--accent); }
+    code {
+      font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+      color: var(--code); background: #0d1320; padding: 2px 6px;
+      border-radius: 5px; border: 1px solid var(--border); font-size: .88em;
+    }
+    pre {
+      background: #0b0f18; border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 16px; overflow-x: auto; margin: 12px 0;
+    }
+    pre code { border: none; padding: 0; background: none; }
+
+    .site-header { padding: 40px 0 6px; text-align: center; }
+    .site-header h1 { margin: 0; font-size: 2rem; letter-spacing: -0.5px; }
+    .site-header h1 span { color: var(--accent); }
+    .tagline { color: var(--muted); margin: 8px 0 0; max-width: 640px; margin-left: auto; margin-right: auto; }
+    .nav { margin-top: 12px; font-size: .9rem; }
+    .nav a { text-decoration: none; margin: 0 8px; }
+    .nav a:hover { text-decoration: underline; }
+
+    .layout { max-width: 1080px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 240px 1fr; gap: 30px; }
+    @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } .toc { position: static !important; } }
+
+    .toc { position: sticky; top: 20px; align-self: start; font-size: .87rem; max-height: calc(100vh - 40px); overflow-y: auto; }
+    .toc h3 { color: var(--muted); text-transform: uppercase; font-size: .72rem; letter-spacing: .6px; margin: 0 0 10px; }
+    .toc ol { list-style: none; margin: 0; padding: 0; }
+    .toc li { margin: 2px 0; }
+    .toc a { display: block; padding: 5px 10px; border-radius: 8px; text-decoration: none; color: var(--muted); border-left: 2px solid transparent; }
+    .toc a:hover { background: var(--panel); color: var(--text); }
+    .toc a.active { color: var(--text); border-left-color: var(--accent); background: var(--panel); }
+
+    article { min-width: 0; }
+    section {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 26px 30px; margin: 0 0 20px;
+      scroll-margin-top: 20px;
+    }
+    section h2 { margin-top: 0; font-size: 1.4rem; }
+    section h2 .num { color: var(--accent); margin-right: 8px; }
+    section h3 { font-size: 1.08rem; margin: 22px 0 8px; color: var(--accent-2); }
+    p { margin: 10px 0; }
+    ul, ol.plain { margin: 10px 0; padding-left: 22px; }
+    li { margin: 5px 0; }
+    .note {
+      border-left: 3px solid var(--accent-2); background: var(--panel-2);
+      padding: 10px 14px; border-radius: 0 10px 10px 0; margin: 14px 0; font-size: .93rem;
+    }
+    .warn { border-left-color: var(--danger); }
+    table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: .89rem; display: block; overflow-x: auto; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: normal; }
+    th { color: var(--muted); font-weight: 600; }
+
+    /* ---- Diagram components (shared visual language with slides.html) ---- */
+    .diagram { background: #0c111c; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 16px 0; overflow-x: auto; }
+    .diagram .cap { text-align: center; color: var(--muted); font-size: .78rem; margin-top: 10px; }
+
+    .chip {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 7px 12px; border-radius: 8px; font-family: "SF Mono", Menlo, monospace;
+      font-size: .82rem; font-weight: 600; border: 1.5px solid;
+    }
+    .chip.blue { background: var(--blue); border-color: var(--blue-b); color: var(--blue-t); }
+    .chip.green { background: var(--green); border-color: var(--green-b); color: var(--green-t); }
+    .chip.root { background: var(--root); border-color: var(--root-b); color: #5a3d12; }
+    .chip.purple { background: var(--purple); border-color: var(--purple-b); color: var(--purple-t); }
+
+    .layers { width: 100%; max-width: 640px; margin: 0 auto; }
+    .layer { border-radius: 12px; padding: 14px 18px; margin: 7px 0; border: 1.5px solid var(--border); font-weight: 600; text-align: center; }
+    .layer small { display: block; font-weight: 400; color: var(--muted); margin-top: 4px; font-size: .78rem; }
+    .layer.l1 { background: #10233f; } .layer.l2 { background: #12304a; }
+    .layer.l3 { background: #143a3a; } .layer.l4 { background: #1a3a22; }
+    .layer.l5 { background: #2a2340; } .layer.l6 { background: #3a1a1a; }
+    .layer-arrow { text-align: center; color: var(--accent); font-size: 1.1rem; margin: 0; }
+
+    .flow { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; justify-content: center; }
+    .step { background: var(--panel-2); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px; max-width: 175px; position: relative; }
+    .step .t { font-weight: 700; }
+    .step .d { color: var(--muted); font-size: .78rem; margin-top: 5px; }
+    .arrow { display: flex; align-items: center; color: var(--accent); font-size: 1.5rem; padding: 0 8px; }
+    @media (max-width: 760px) { .arrow { transform: rotate(90deg); } .flow { flex-direction: column; align-items: center; } }
+
+    .subgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 12px; }
+    @media (max-width: 700px) { .subgrid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 460px) { .subgrid { grid-template-columns: 1fr; } }
+    .subcard { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .subcard .label { font-family: monospace; color: var(--accent-2); font-weight: 700; margin-bottom: 6px; }
+    .subcard p { margin: 0; font-size: .85rem; color: var(--muted); }
+
+    /* Memory map (vertical stacked address space) */
+    .memmap { width: 100%; max-width: 380px; margin: 0 auto; border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .memmap .seg { padding: 10px 16px; font-size: .85rem; font-weight: 600; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .memmap .seg:last-child { border-bottom: none; }
+    .memmap .seg small { font-weight: 400; color: inherit; opacity: .75; }
+    .memmap .kspace { background: #3a1a1a; }
+    .memmap .stack { background: #143a3a; }
+    .memmap .mmap { background: #1a3a22; }
+    .memmap .heap { background: #12304a; }
+    .memmap .bss { background: #2a2340; }
+    .memmap .data { background: #10233f; }
+    .memmap .text { background: #3a2f10; }
+
+    /* Comparison cards for kernel architectures */
+    .archcards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 760px) { .archcards { grid-template-columns: 1fr; } }
+    .archcard { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .archcard h4 { margin: 0 0 10px; font-size: .95rem; }
+    .archbox { border: 1.5px dashed var(--border); border-radius: 10px; padding: 8px; min-height: 150px; display: flex; flex-direction: column; gap: 6px; justify-content: flex-end; }
+    .archbox .k { background: #3a1a1a; border-radius: 6px; padding: 5px; text-align: center; font-size: .72rem; }
+    .archbox .u { background: #12304a; border-radius: 6px; padding: 5px; text-align: center; font-size: .72rem; }
+    .archcard p { font-size: .82rem; color: var(--muted); margin: 8px 0 0; }
+
+    .legend { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 14px; font-size: .78rem; color: var(--muted); }
+    .legend b { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 5px; border: 1px solid; }
+
+    .site-footer { text-align: center; padding: 20px 0 40px; color: var(--muted); font-size: .82rem; }
+    .site-footer a { text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <h1>🐧 Linux <span>Kernel</span></h1>
+    <p class="tagline">Ghid complet, ilustrat, despre nucleul Linux: ce este, cum e structurat, cum funcționează fiecare subsistem major, cum se configurează/compilează și cum se depanează.</p>
+    <nav class="nav">
+      <a href="./">🚀 DevOps Quiz</a> ·
+      <a href="os-book/">📘 OS Book Course</a> ·
+      <a href="linux-theory.html">📖 Linux Theory</a> ·
+      <a href="linux.html">📋 Commands Memo</a> ·
+      <a href="slides.html">🖼️ Visual Slides</a> ·
+      <a href="https://github.com/skybytescode/skillbox">⭐ GitHub</a>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside class="toc">
+      <h3>Cuprins</h3>
+      <ol id="toc"></ol>
+    </aside>
+
+    <article>
+
+      <section id="intro">
+        <h2><span class="num">1</span>Ce este kernel-ul?</h2>
+        <p><strong>Kernel-ul (nucleul)</strong> este programul central al unui sistem de operare: singurul cod care rulează cu acces total la hardware. El este intermediarul obligatoriu între aplicațiile pe care le rulezi și procesor, memorie, discuri, plăci de rețea și restul dispozitivelor fizice.</p>
+        <p><strong>Linux</strong> desemnează strict acest nucleu — creat de <strong>Linus Torvalds</strong> în 1991, ca proiect personal inspirat de Unix și Minix. Ce numim colocvial "Linux" (Ubuntu, Fedora, Debian etc.) este de fapt o <strong>distribuție</strong>: nucleul Linux + unelte GNU + un manager de pachete + software userland, ambalate împreună.</p>
+        <div class="diagram">
+          <div class="layers">
+            <div class="layer l6">Aplicații (bash, firefox, nginx, python...)</div>
+            <div class="layer-arrow">↕ apeluri de bibliotecă</div>
+            <div class="layer l5">Biblioteci (glibc, libc...)</div>
+            <div class="layer-arrow">↕ apeluri de sistem (syscalls)</div>
+            <div class="layer l4">KERNEL LINUX<small>scheduler · memorie · VFS · rețea · drivere · IPC</small></div>
+            <div class="layer-arrow">↕ instrucțiuni + întreruperi</div>
+            <div class="layer l1">Hardware<small>CPU · RAM · disc · placă de rețea · GPU...</small></div>
+          </div>
+          <p class="cap">Kernel-ul e singurul strat care "atinge" hardware-ul direct. Totul deasupra lui trece prin el.</p>
+        </div>
+        <h3>Kernel vs. sistem de operare vs. distribuție</h3>
+        <table>
+          <tr><th>Termen</th><th>Ce înseamnă</th></tr>
+          <tr><td><strong>Kernel</strong></td><td>Codul care gestionează procesoare, memorie, dispozitive și oferă serviciile de bază (fișiere, procese, rețea) restului sistemului.</td></tr>
+          <tr><td><strong>Sistem de operare</strong></td><td>Kernel + toate uneltele minime necesare să faci ceva util cu el (shell, comenzi, biblioteci).</td></tr>
+          <tr><td><strong>Distribuție (distro)</strong></td><td>Un SO complet, "la pachet": kernel + userland GNU + manager de pachete + configurări implicite + suport (ex: Ubuntu, Debian, Fedora, Arch).</td></tr>
+        </table>
+        <div class="note">💡 Toate distribuțiile Linux (Ubuntu, Fedora, Arch, Alpine, Android...) folosesc, în esență, <em>același</em> kernel Linux (eventual cu patch-uri), dar diferă complet în userland, unelte de instalare și filosofie.</div>
+      </section>
+
+      <section id="roluri">
+        <h2><span class="num">2</span>Rolurile fundamentale ale kernel-ului</h2>
+        <p>Indiferent de arhitectură, orice kernel modern trebuie să rezolve aceleași patru probleme:</p>
+        <div class="subgrid">
+          <div class="subcard"><div class="label">1. Management procese</div><p>Decide ce proces rulează, când, pe care nucleu CPU, și pentru cât timp (scheduling). Izolează procesele unele de altele.</p></div>
+          <div class="subcard"><div class="label">2. Management memorie</div><p>Alocă și protejează memoria RAM pentru fiecare proces, folosind memorie virtuală, astfel încât un proces să nu poată citi memoria altuia.</p></div>
+          <div class="subcard"><div class="label">3. Acces la dispozitive</div><p>Oferă o interfață uniformă (fișiere, drivere) peste hardware eterogen: discuri, plăci de rețea, USB, GPU etc.</p></div>
+          <div class="subcard"><div class="label">4. Comunicare & fișiere</div><p>Implementează sistemele de fișiere, rețeaua (stiva TCP/IP) și mecanismele prin care procesele comunică între ele (IPC).</p></div>
+        </div>
+        <div class="note">Toate aceste servicii sunt expuse programelor din userspace printr-un set fix de funcții numite <strong>apeluri de sistem</strong> (system calls) — vezi secțiunea 4.</div>
+      </section>
+
+      <section id="arhitecturi">
+        <h2><span class="num">3</span>Tipuri de arhitecturi de kernel</h2>
+        <p>Modul în care un kernel își organizează intern subsistemele definește trei mari familii de arhitecturi:</p>
+        <div class="archcards">
+          <div class="archcard">
+            <h4>Monolitic</h4>
+            <div class="archbox">
+              <div class="k">Drivere</div><div class="k">Sistem fișiere</div><div class="k">Rețea</div><div class="k">Scheduler</div>
+              <div class="u">Aplicație</div>
+            </div>
+            <p>Tot (drivere, VFS, rețea, scheduler) rulează în același spațiu privilegiat (kernel space). Rapid — apeluri de funcție directe — dar un bug într-un driver poate pica tot sistemul. <strong>Linux e monolitic</strong> (dar modular, vezi mai jos).</p>
+          </div>
+          <div class="archcard">
+            <h4>Microkernel</h4>
+            <div class="archbox">
+              <div class="k">IPC minim + scheduler</div>
+              <div class="u">Driver disc (proces)</div><div class="u">Sistem fișiere (proces)</div><div class="u">Aplicație</div>
+            </div>
+            <p>Doar strictul necesar (IPC, scheduler de bază) rulează privilegiat; drivere și sisteme de fișiere rulează ca procese userspace separate, comunicând prin mesaje. Mai robust la crash-uri, dar mai lent (multe treceri kernel↔user). Ex: <strong>Minix</strong>, <strong>QNX</strong>, <strong>seL4</strong>.</p>
+          </div>
+          <div class="archcard">
+            <h4>Hibrid</h4>
+            <div class="archbox">
+              <div class="k">Nucleu de bază + drivere critice</div>
+              <div class="k">Servicii încărcate dinamic</div>
+              <div class="u">Aplicație</div>
+            </div>
+            <p>Combină ideile: nucleu compact + module/servicii care pot rula privilegiat sau nu, după caz. Ex: <strong>Windows NT</strong>, <strong>macOS (XNU)</strong>.</p>
+          </div>
+        </div>
+        <div class="note">🧩 <strong>Linux este monolitic, dar modular</strong>: toate subsistemele rulează în kernel space (ca într-un monolitic clasic), însă multe componente (drivere, sisteme de fișiere, protocoale) pot fi compilate ca <strong>module încărcabile</strong> (<code>.ko</code>) și adăugate/scoase din kernel-ul care rulează, fără repornire — vezi secțiunea 8. Practic ia din viteza monoliticului și din flexibilitatea microkernel-ului.</div>
+      </section>
+
+      <section id="syscalls">
+        <h2><span class="num">4</span>Kernel space, user space și apelurile de sistem</h2>
+        <p>CPU-urile moderne au niveluri de privilegiu ("ring"-uri). Linux folosește practic doar două: <strong>kernel space</strong> (ring 0 — acces total la hardware) și <strong>user space</strong> (ring 3 — acces restricționat, sandbox-at de kernel). Această separare e ceea ce previne ca o aplicație obișnuită să corupă memoria altui proces sau a kernel-ului.</p>
+        <p>Când o aplicație are nevoie de un serviciu al kernel-ului (să deschidă un fișier, să aloce memorie, să creeze un proces), nu poate accesa direct hardware-ul — face un <strong>apel de sistem (system call)</strong>:</p>
+        <div class="diagram">
+          <div class="flow">
+            <div class="step"><div class="t">1. Aplicație</div><div class="d">apelează <code>read()</code> din libc</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">2. glibc</div><div class="d">pregătește registrele, execută instrucțiunea <code>syscall</code>/<code>int 0x80</code></div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">3. Trap → kernel</div><div class="d">CPU trece din ring 3 în ring 0</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">4. Handler kernel</div><div class="d">execută codul real (ex: citește de pe disc)</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">5. Return</div><div class="d">rezultatul e copiat înapoi, CPU revine în ring 3</div></div>
+          </div>
+        </div>
+        <p>Linux expune câteva sute de apeluri de sistem (vezi <code>man syscalls</code>) — <code>open</code>, <code>read</code>, <code>write</code>, <code>close</code>, <code>fork</code>, <code>execve</code>, <code>mmap</code>, <code>socket</code>, <code>ioctl</code> etc. Ele formează <strong>ABI-ul stabil</strong> al kernel-ului: interfața pe care Linux se angajează să nu o "rupă" niciodată pentru programele existente.</p>
+        <pre><code>$ strace -c ls          # numără fiecare syscall folosit de comanda ls
+$ strace -e trace=open,read cat /etc/hostname   # urmărește syscall-uri specifice</code></pre>
+        <div class="note">🔐 <strong>Capabilities</strong> rafinează modelul "root vs. restul": în loc de tot-sau-nimic, un proces poate primi doar privilegii punctuale (ex. <code>CAP_NET_BIND_SERVICE</code> pentru a asculta pe portul 80 fără a fi root complet). Vezi <code>man capabilities</code>.</div>
+      </section>
+
+      <section id="subsisteme">
+        <h2><span class="num">5</span>Harta subsistemelor kernel-ului Linux</h2>
+        <p>Codul sursă al kernel-ului Linux (peste 30 de milioane de linii, în <code>kernel.org</code>) e organizat pe subsisteme mari, fiecare cu propriul mentor/maintainer:</p>
+        <div class="subgrid">
+          <div class="subcard"><div class="label">Process Scheduler</div><p>Decide ce fir de execuție rulează pe fiecare nucleu CPU și când (CFS, EEVDF, real-time). Secțiunea 6.</p></div>
+          <div class="subcard"><div class="label">Memory Management (mm)</div><p>Memorie virtuală, paginare, alocatoare (buddy, slab/slub), swap, OOM killer. Secțiunea 7.</p></div>
+          <div class="subcard"><div class="label">VFS & Filesystems</div><p>Stratul unificat de fișiere peste ext4, btrfs, XFS, NFS, procfs, sysfs... Secțiunea 8.</p></div>
+          <div class="subcard"><div class="label">Device Drivers</div><p>Cea mai mare parte a codului sursă: drivere pentru discuri, plăci video, USB, senzori etc. Secțiunea 9.</p></div>
+          <div class="subcard"><div class="label">Networking</div><p>Stiva completă TCP/IP, netfilter (firewall), socket API. Secțiunea 10.</p></div>
+          <div class="subcard"><div class="label">IPC & sincronizare</div><p>Pipe-uri, semnale, semafoare, memorie partajată, spinlocks, mutexes, RCU. Secțiunea 11.</p></div>
+          <div class="subcard"><div class="label">Namespaces & cgroups</div><p>Izolare și limitare de resurse — fundația containerelor (Docker, Kubernetes). Secțiunea 12.</p></div>
+          <div class="subcard"><div class="label">Security (LSM)</div><p>SELinux, AppArmor, seccomp — restricții suplimentare peste modelul clasic user/root. Secțiunea 13.</p></div>
+          <div class="subcard"><div class="label">Arch-specific code</div><p>Cod specific fiecărei arhitecturi de CPU: x86_64, ARM64, RISC-V etc. (<code>arch/</code> în sursă).</p></div>
+        </div>
+      </section>
+
+      <section id="procese">
+        <h2><span class="num">6</span>Managementul proceselor și schedulerul</h2>
+        <p>Pentru kernel, un <strong>proces</strong> e descris de o structură <code>task_struct</code> (PID, memorie, fișiere deschise, stare, prioritate...). Un proces poate avea mai multe <strong>fire de execuție (threads)</strong>, care partajează memoria dar au propriul stivă și registre.</p>
+        <h3>Stările unui proces</h3>
+        <div class="diagram">
+          <div class="flow">
+            <div class="step"><div class="t">Created</div><div class="d"><code>fork()</code>/<code>clone()</code></div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">Ready</div><div class="d">așteaptă rândul la CPU</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">Running</div><div class="d">execută pe un nucleu CPU</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">Waiting/Sleeping</div><div class="d">așteaptă I/O sau un eveniment</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">Terminated/Zombie</div><div class="d">a ieșit, așteaptă ca părintele să facă <code>wait()</code></div></div>
+          </div>
+          <p class="cap">Running ↔ Ready se repetă continuu (schimbare de context); Waiting revine în Ready când evenimentul așteptat sosește.</p>
+        </div>
+        <h3>Schedulere disponibile în Linux</h3>
+        <table>
+          <tr><th>Scheduler</th><th>Pentru</th><th>Idee de bază</th></tr>
+          <tr><td><strong>CFS</strong> (Completely Fair Scheduler)</td><td>procese normale</td><td>fiecare proces primește o "cotă echitabilă" de timp CPU proporțională cu <em>nice</em>; folosește un red-black tree ordonat după "vruntime".</td></tr>
+          <tr><td><strong>EEVDF</strong> (din kernel 6.6+)</td><td>procese normale</td><td>succesorul CFS — planifică pe baza unui "termen limită virtual" pentru latență mai bună.</td></tr>
+          <tr><td><strong>SCHED_FIFO / SCHED_RR</strong></td><td>timp real (soft/hard)</td><td>prioritate fixă, rulează până cedează CPU singur (FIFO) sau la cuantă fixă (Round-Robin); au mereu prioritate peste CFS.</td></tr>
+          <tr><td><strong>SCHED_DEADLINE</strong></td><td>timp real cu deadline</td><td>Earliest Deadline First — pentru sarcini cu constrângeri stricte de timp.</td></tr>
+        </table>
+        <p>Prioritatea "clasică" a unui proces normal se ajustează cu <strong>nice</strong>, între <code>-20</code> (cea mai mare prioritate) și <code>+19</code> (cea mai mică):</p>
+        <pre><code>$ nice -n 10 ./script.sh      # pornește cu prioritate mai mică
+$ renice -n -5 -p 1234        # schimbă prioritatea unui proces existent (necesită root pentru valori negative)
+$ chrt -f 50 ./realtime_app    # rulează cu SCHED_FIFO, prioritate 50</code></pre>
+        <div class="note">⚙️ <strong>Context switch</strong> = operația prin care CPU salvează starea procesului curent și încarcă starea altuia. E rapid, dar nu gratuit — de aceea sistemele cu mii de thread-uri active pot deveni mai lente doar din cauza switch-urilor dese ("thrashing").</div>
+      </section>
+
+      <section id="memorie">
+        <h2><span class="num">7</span>Managementul memoriei</h2>
+        <p>Fiecare proces "vede" propriul spațiu de adrese <strong>virtual</strong> și izolat, de obicei 128 TiB pe 64-bit — chiar dacă mașina are mult mai puțină memorie RAM fizică. Kernel-ul (prin MMU-ul procesorului) traduce adresele virtuale în adrese fizice folosind <strong>tabele de pagini</strong>.</p>
+        <div class="diagram">
+          <div class="memmap">
+            <div class="seg kspace">Kernel space<small> (partajat, protejat)</small></div>
+            <div class="seg stack">Stivă (stack)<small> ↓ crește în jos</small></div>
+            <div class="seg mmap">Memory-mapped region<small>biblioteci .so, mmap()</small></div>
+            <div class="seg heap">Heap<small> ↑ crește în sus (malloc)</small></div>
+            <div class="seg bss">BSS<small>variabile globale neinițializate</small></div>
+            <div class="seg data">Data<small>variabile globale inițializate</small></div>
+            <div class="seg text">Text<small>codul executabil</small></div>
+          </div>
+          <p class="cap">Spațiul virtual de adrese al unui proces pe 64-bit (simplificat)</p>
+        </div>
+        <h3>Concepte cheie</h3>
+        <ul>
+          <li><strong>Paginare (paging)</strong> — memoria e împărțită în pagini (de obicei 4 KiB); tabelele de pagini mapează pagini virtuale → cadre fizice.</li>
+          <li><strong>TLB</strong> — un cache hardware pentru traducerile de adrese recente, ca MMU-ul să nu parcurgă tabelele de pagini la fiecare acces.</li>
+          <li><strong>Copy-on-write (COW)</strong> — după <code>fork()</code>, părinte și copil partajează aceleași pagini fizice până când unul dintre ei scrie; abia atunci se copiază pagina.</li>
+          <li><strong>Swap</strong> — pagini rar folosite sunt mutate pe disc quando RAM-ul e insuficient, eliberând spațiu fizic.</li>
+          <li><strong>Alocatoare interne</strong> — <em>buddy allocator</em> pentru pagini întregi, <em>slab/slub allocator</em> pentru obiecte mici, frecvent (re)alocate din kernel (ex: <code>task_struct</code>).</li>
+          <li><strong>OOM killer</strong> — când memoria (RAM+swap) se epuizează complet, kernel-ul alege și termină forțat un proces ("oom-score" mai mare = țintă mai probabilă) ca să salveze sistemul.</li>
+        </ul>
+        <pre><code>$ free -h                  # memorie liberă/folosită/swap
+$ cat /proc/meminfo         # detalii complete despre memorie
+$ cat /proc/&lt;pid&gt;/status | grep Vm   # memoria unui proces specific
+$ vmstat 1                  # statistici memorie/CPU live</code></pre>
+      </section>
+
+      <section id="vfs">
+        <h2><span class="num">8</span>Sistemul de fișiere virtual (VFS) și modulele de kernel</h2>
+        <p><strong>VFS (Virtual File System)</strong> e un strat de abstractizare: oferă aceleași apeluri (<code>open</code>, <code>read</code>, <code>write</code>, <code>stat</code>...) indiferent dacă fișierul e pe ext4, pe o cheie USB cu FAT32, pe un server NFS, sau reprezintă o structură din kernel (procfs).</p>
+        <table>
+          <tr><th>Sistem de fișiere</th><th>Tip</th><th>Observații</th></tr>
+          <tr><td><code>ext4</code></td><td>disc, jurnalizat</td><td>implicit pe majoritatea distribuțiilor, matur și stabil.</td></tr>
+          <tr><td><code>btrfs</code></td><td>disc, copy-on-write</td><td>snapshot-uri, subvolume, checksum-uri; implicit pe openSUSE/Fedora Workstation.</td></tr>
+          <tr><td><code>xfs</code></td><td>disc, jurnalizat</td><td>performant pe fișiere mari; implicit pe RHEL.</td></tr>
+          <tr><td><code>procfs</code> (<code>/proc</code>)</td><td>virtual</td><td>expune starea proceselor și a kernel-ului ca "fișiere" (nu ocupă disc).</td></tr>
+          <tr><td><code>sysfs</code> (<code>/sys</code>)</td><td>virtual</td><td>expune dispozitivele și parametrii kernel-ului (folosit de <code>udev</code>).</td></tr>
+          <tr><td><code>tmpfs</code></td><td>virtual, RAM</td><td>montat des pe <code>/tmp</code> sau <code>/dev/shm</code>: rapid, dispare la reboot.</td></tr>
+          <tr><td><code>NFS</code>/<code>CIFS</code></td><td>rețea</td><td>montează sisteme de fișiere expuse de alte mașini.</td></tr>
+        </table>
+        <h3>Module de kernel (LKM — Loadable Kernel Modules)</h3>
+        <p>Un modul (fișier <code>.ko</code>) e cod ce poate fi injectat sau scos din kernel-ul care rulează, fără repornire — de obicei drivere sau sisteme de fișiere folosite ocazional.</p>
+        <pre><code>$ lsmod                        # module curent încărcate
+$ modprobe nvidia               # încarcă un modul (+ dependențele lui)
+$ modprobe -r nvidia             # descarcă modulul
+$ modinfo e1000e                # informații despre un modul (autor, parametri, licență)
+$ dmesg | tail                  # log-ul kernel-ului — util imediat după (de)încărcarea unui modul</code></pre>
+        <div class="note">📂 <strong>"Totul e un fișier"</strong> se aplică și dispozitivelor: <code>/dev/sda</code> (disc), <code>/dev/tty1</code> (terminal), <code>/dev/null</code> — toate sunt "fișiere speciale" prin care userspace vorbește cu drivere din kernel, folosind aceleași <code>read()</code>/<code>write()</code>/<code>ioctl()</code>.</div>
+      </section>
+
+      <section id="intreruperi">
+        <h2><span class="num">9</span>Întreruperi (interrupts) și I/O</h2>
+        <p>Hardware-ul nu așteaptă politicos să fie interogat — anunță kernel-ul cu o <strong>întrerupere hardware (IRQ)</strong> (ex: a sosit un pachet de rețea, tastatura a fost apăsată, discul a terminat un transfer DMA). Kernel-ul oprește orice face și rulează un <strong>handler de întrerupere</strong>.</p>
+        <div class="diagram">
+          <div class="flow">
+            <div class="step"><div class="t">Hardware IRQ</div><div class="d">placă de rețea/disc semnalează un eveniment</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">Top half</div><div class="d">handler minimal, foarte rapid, întreruperi dezactivate</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">Bottom half</div><div class="d">softirq / tasklet / workqueue — restul procesării, amânat</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">Userspace</div><div class="d">procesul așteptat e trezit (ex: <code>read()</code> revine)</div></div>
+          </div>
+        </div>
+        <p>Această separare <strong>top half / bottom half</strong> există ca handler-ele de întrerupere să fie cât mai scurte (rulează cu întreruperile dezactivate) — restul muncii se amână pentru mai târziu, când sistemul poate din nou răspunde la alte întreruperi.</p>
+        <ul>
+          <li><strong>DMA (Direct Memory Access)</strong> — permite dispozitivelor să transfere date direct în/din RAM fără să ocupe CPU-ul pentru fiecare octet.</li>
+          <li><strong>Polling vs. interrupt-driven</strong> — pentru dispozitive foarte rapide (rețea 10G+), Linux poate comuta temporar pe polling (<code>NAPI</code>) ca să evite "furtuni" de întreruperi.</li>
+        </ul>
+        <pre><code>$ cat /proc/interrupts     # câte întreruperi de fiecare tip a servit fiecare CPU</code></pre>
+      </section>
+
+      <section id="retea">
+        <h2><span class="num">10</span>Stiva de rețea</h2>
+        <p>Kernel-ul Linux implementează complet stiva <strong>TCP/IP</strong>, de la driverul plăcii de rețea până la API-ul de socket-uri folosit de aplicații.</p>
+        <div class="diagram">
+          <div class="layers">
+            <div class="layer l6">Aplicație (socket API: <code>socket()</code>, <code>send()</code>, <code>recv()</code>)</div>
+            <div class="layer l5">Transport: TCP / UDP</div>
+            <div class="layer l4">Rețea: IP, routing, <strong>netfilter</strong> (firewall)</div>
+            <div class="layer l2">Legătură de date: Ethernet, ARP</div>
+            <div class="layer l1">Driver placă de rețea (NIC)</div>
+          </div>
+        </div>
+        <ul>
+          <li><strong>netfilter</strong> — framework-ul din kernel pe care se bazează <code>iptables</code>/<code>nftables</code> (firewall, NAT, port forwarding).</li>
+          <li><strong>Network namespaces</strong> — fiecare namespace are propria stivă de rețea izolată (interfețe, rute, reguli firewall) — cum funcționează rețeaua în containere.</li>
+          <li><strong>eBPF</strong> — permite injectarea de mici programe verificate direct în kernel (rețea, tracing, securitate) fără a scrie module — folosit de unelte precum Cilium sau Falco.</li>
+        </ul>
+        <pre><code>$ ss -tulpn                 # socket-uri deschise (TCP/UDP, listen)
+$ ip route                  # tabela de rutare a kernel-ului
+$ iptables -L -n            # regulile de firewall active</code></pre>
+      </section>
+
+      <section id="ipc">
+        <h2><span class="num">11</span>IPC și sincronizare în kernel</h2>
+        <h3>Comunicare între procese (IPC)</h3>
+        <table>
+          <tr><th>Mecanism</th><th>Folosit pentru</th></tr>
+          <tr><td><strong>Pipe / FIFO</strong></td><td>flux de octeți unidirecțional între procese înrudite (<code>cmd1 | cmd2</code>).</td></tr>
+          <tr><td><strong>Semnale</strong></td><td>notificări asincrone scurte (<code>SIGTERM</code>, <code>SIGKILL</code>...).</td></tr>
+          <tr><td><strong>Memorie partajată</strong> (<code>shm</code>)</td><td>cea mai rapidă metodă — procesele scriu/citesc aceeași zonă de RAM.</td></tr>
+          <tr><td><strong>Socket-uri Unix</strong></td><td>comunicare bidirecțională, local, tip stream sau datagram (folosit intens de systemd, D-Bus).</td></tr>
+          <tr><td><strong>Semafoare / mutex-uri</strong></td><td>coordonează accesul la resurse partajate.</td></tr>
+          <tr><td><strong>Message queues</strong></td><td>mesaje structurate, cu prioritate, între procese.</td></tr>
+        </table>
+        <h3>Sincronizare internă în kernel</h3>
+        <p>Kernel-ul însuși rulează concurent pe mai multe nuclee CPU, deci trebuie să-și protejeze propriile structuri de date:</p>
+        <ul>
+          <li><strong>Spinlock</strong> — așteaptă activ (busy-wait) într-o buclă scurtă; folosit când secțiunea critică e foarte scurtă și nu se poate dormi (ex: în handler de întrerupere).</li>
+          <li><strong>Mutex</strong> — ca un spinlock, dar procesul care așteaptă e adormit (nu consumă CPU) — pentru secțiuni critice mai lungi.</li>
+          <li><strong>RCU (Read-Copy-Update)</strong> — permite multor cititori să acceseze o structură fără lock deloc, în timp ce scrierile creează o copie nouă și o "publică" atomic. Esențial pentru performanța pe multe nuclee.</li>
+        </ul>
+      </section>
+
+      <section id="namespaces">
+        <h2><span class="num">12</span>Namespaces și cgroups — fundația containerelor</h2>
+        <p>Docker, Podman și Kubernetes <strong>nu</strong> folosesc un kernel separat — containerele sunt procese Linux obișnuite, izolate cu două funcționalități din kernel:</p>
+        <div class="subgrid">
+          <div class="subcard"><div class="label">Namespaces — ce vede</div><p><code>PID</code> (proprii PID-uri), <code>NET</code> (propria stivă de rețea), <code>MNT</code> (propriul arbore de fișiere montate), <code>UTS</code> (hostname), <code>IPC</code>, <code>USER</code> (mapare UID proprie).</p></div>
+          <div class="subcard"><div class="label">cgroups — cât poate folosi</div><p>Limitează și contorizează CPU, memorie, I/O disc și lățime de bandă de rețea per grup de procese. cgroups v2 unifică ierarhia pentru toate resursele.</p></div>
+        </div>
+        <div class="diagram">
+          <div class="layers">
+            <div class="layer l1">Un singur kernel Linux (host)</div>
+          </div>
+          <div class="subgrid" style="margin-top:10px">
+            <div class="subcard"><div class="label">🐳 Container A</div><p>namespace PID/NET/MNT propriu · cgroup: max 1 CPU, 512 MiB RAM</p></div>
+            <div class="subcard"><div class="label">🐳 Container B</div><p>namespace PID/NET/MNT propriu · cgroup: max 2 CPU, 1 GiB RAM</p></div>
+            <div class="subcard"><div class="label">🖥️ Proces normal</div><p>vede tot sistemul, fără izolare de namespace</p></div>
+          </div>
+          <p class="cap">Toate rulează pe același kernel — izolarea e logică (namespaces), nu virtualizare hardware.</p>
+        </div>
+        <pre><code>$ unshare --pid --net --mount --fork bash   # creează manual namespace-uri noi (demonstrativ)
+$ systemd-cgtop                              # consum de resurse per cgroup, live
+$ cat /sys/fs/cgroup/&lt;grup&gt;/cpu.max          # limita CPU a unui cgroup (v2)</code></pre>
+        <div class="note">🧠 Diferența față de <strong>mașinile virtuale</strong>: o VM virtualizează hardware-ul și rulează un kernel complet separat (mai izolat, mai greu); un container partajează kernel-ul host-ului (mai ușor, pornește instant, dar izolarea e mai "subțire").</div>
+      </section>
+
+      <section id="securitate">
+        <h2><span class="num">13</span>Module de securitate (LSM)</h2>
+        <p>Peste modelul clasic user/grup/permisiuni, Linux Security Modules (<strong>LSM</strong>) adaugă politici suplimentare de control al accesului, verificate la fiecare apel de sistem relevant:</p>
+        <ul>
+          <li><strong>SELinux</strong> (Red Hat/Fedora/CentOS) — control obligatoriu al accesului (MAC): fiecare proces și fișier are o etichetă; politica decide ce etichetă poate accesa ce etichetă, indiferent de permisiunile Unix clasice.</li>
+          <li><strong>AppArmor</strong> (Ubuntu/Debian/SUSE) — similar ca scop, dar profilurile se scriu pe cale de fișier, nu pe etichete — considerat mai simplu de administrat.</li>
+          <li><strong>seccomp</strong> — restricționează <em>ce apeluri de sistem</em> poate face un proces (ex: containerele Docker rulează cu un filtru seccomp implicit care blochează sute de syscalls rar folosite/periculoase).</li>
+          <li><strong>Capabilities</strong> — vezi secțiunea 4: privilegii root granulare, în loc de tot-sau-nimic.</li>
+        </ul>
+        <pre><code>$ getenforce                 # modul curent SELinux (Enforcing/Permissive/Disabled)
+$ aa-status                  # profiluri AppArmor active
+$ docker run --security-opt seccomp=default.json ...   # profil seccomp custom</code></pre>
+      </section>
+
+      <section id="boot">
+        <h2><span class="num">14</span>Cum pornește kernel-ul (boot)</h2>
+        <div class="diagram">
+          <div class="flow">
+            <div class="step"><div class="t">1. Firmware</div><div class="d">BIOS/UEFI: teste POST, alege un dispozitiv boot-abil</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">2. Bootloader</div><div class="d">GRUB încarcă imaginea kernel (<code>vmlinuz</code>) + <code>initramfs</code> în RAM</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">3. Decompresie kernel</div><div class="d">nucleul se auto-extrage și inițializează structurile interne</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">4. Detectare hardware</div><div class="d">drivere, montează rădăcina reală (folosind initramfs ca punte)</div></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="t">5. PID 1</div><div class="d">kernel-ul lansează <code>init</code>/<code>systemd</code>, primul proces userspace</div></div>
+          </div>
+        </div>
+        <ul>
+          <li><strong><code>vmlinuz</code></strong> — imaginea kernel-ului comprimată (numele vine de la "vm" = memorie virtuală + "linuz" = Linux gzip-uit).</li>
+          <li><strong><code>initramfs</code>/<code>initrd</code></strong> — un mic sistem de fișiere temporar, încărcat integral în RAM, cu doar driverele/uneltele minime necesare să găsească și să monteze discul real (util mai ales cu discuri criptate, RAID, LVM).</li>
+          <li><strong>Parametri de kernel la boot</strong> — GRUB poate transmite kernel-ului parametri în linia de comandă (ex: <code>quiet splash</code>, <code>root=/dev/sda1</code>, <code>nomodeset</code>); vezi <code>/proc/cmdline</code> pentru cei folosiți la boot-ul curent.</li>
+        </ul>
+        <pre><code>$ cat /proc/cmdline           # parametrii de boot ai kernel-ului curent
+$ dmesg | head -50             # log-ul complet al inițializării kernel-ului</code></pre>
+        <p>Pentru pașii dinaintea kernel-ului (BIOS, MBR, GRUB în detaliu) și inițializarea userspace (init/systemd) — vezi capitolul <a href="os-book/#/ch5/0">6 din cursul OS Book</a>.</p>
+      </section>
+
+      <section id="config">
+        <h2><span class="num">15</span>Configurare și compilare</h2>
+        <p>Kernel-ul e extrem de configurabil: mii de opțiuni decid ce funcționalități sunt compilate <strong>built-in</strong>, care ca <strong>module</strong> (<code>=m</code>), și care sunt excluse complet. Configurația trăiește într-un fișier <code>.config</code>, generat interactiv sau din presetări:</p>
+        <pre><code>$ make menuconfig     # interfață text interactivă (ncurses) pentru configurare
+$ make xconfig         # variantă grafică (Qt)
+$ make defconfig       # configurație implicită rezonabilă pentru arhitectura curentă
+$ make -j$(nproc)      # compilează kernel-ul folosind toate nucleele disponibile
+$ make modules_install install   # instalează modulele + imaginea kernel</code></pre>
+        <p>Opțiunile din <code>menuconfig</code> vin din fișiere <strong>Kconfig</strong> distribuite în tot codul sursă — fiecare driver/subsistem își declară acolo opțiunile și dependențele.</p>
+        <table>
+          <tr><th>Valoare în <code>.config</code></th><th>Înseamnă</th></tr>
+          <tr><td><code>CONFIG_X=y</code></td><td>compilat direct în imaginea kernel-ului (built-in)</td></tr>
+          <tr><td><code>CONFIG_X=m</code></td><td>compilat ca modul separat (<code>.ko</code>), încărcabil la nevoie</td></tr>
+          <tr><td><code>CONFIG_X</code> absent</td><td>funcționalitatea nu e inclusă deloc</td></tr>
+        </table>
+        <div class="note">🛠️ Majoritatea utilizatorilor nu compilează niciodată kernel-ul — distribuțiile livrează un kernel precompilat, cu configurație generică + module pentru aproape orice hardware. Recompilarea manuală e utilă pentru: hardware embedded, optimizare extremă, patch-uri custom sau învățare.</div>
+      </section>
+
+      <section id="versionare">
+        <h2><span class="num">16</span>Versionare și ciclul de dezvoltare</h2>
+        <p>Versiunile kernel-ului urmează schema <code>MAJOR.MINOR.PATCH</code> (ex: <code>6.9.4</code>). Dezvoltarea e coordonată de Linus Torvalds prin <strong>git</strong> (pe care el însuși l-a creat, în 2005, tot pentru a gestiona dezvoltarea kernel-ului) și mii de contribuitori, coordonați prin liste de discuții (LKML).</p>
+        <table>
+          <tr><th>Tip de versiune</th><th>Ciclu de viață</th><th>Pentru cine</th></tr>
+          <tr><td><strong>Mainline</strong></td><td>o versiune nouă la ~9-10 săptămâni</td><td>ultimele funcționalități; dezvoltatori, testeri.</td></tr>
+          <tr><td><strong>Stable</strong></td><td>patch-uri de bug-fix/securitate pe o versiune mainline, până apare următoarea</td><td>utilizare generală imediat după lansare.</td></tr>
+          <tr><td><strong>Longterm (LTS)</strong></td><td>întreținută 2-6 ani (ex: 6.1, 5.15, 5.10)</td><td>distribuții enterprise, servere, embedded — stabilitate pe termen lung.</td></tr>
+        </table>
+        <p>Un ciclu de dezvoltare mainline are, simplificat, o fereastră de "merge" de ~2 săptămâni (se acceptă funcționalități noi), urmată de 7 candidați de lansare (<code>-rc1</code>...<code>-rc7</code>) în care se rezolvă doar regresii/bug-uri, apoi lansarea finală.</p>
+        <pre><code>$ uname -r                     # versiunea kernel-ului rulat curent
+$ cat /proc/version              # versiune + compilator + dată build</code></pre>
+      </section>
+
+      <section id="tuning">
+        <h2><span class="num">17</span>Parametri și tuning în timpul rulării</h2>
+        <p>Multe comportamente ale kernel-ului pot fi ajustate <em>fără</em> recompilare, prin <code>sysctl</code> (care citește/scrie în <code>/proc/sys</code>):</p>
+        <pre><code>$ sysctl -a | less                       # toți parametrii disponibili
+$ sysctl vm.swappiness                    # citește un parametru (cât de agresiv se face swap)
+$ sudo sysctl -w net.ipv4.ip_forward=1     # setează temporar (până la reboot)
+# permanent: adaugă linia într-un fișier din /etc/sysctl.d/</code></pre>
+        <table>
+          <tr><th>Parametru</th><th>Controlează</th></tr>
+          <tr><td><code>vm.swappiness</code></td><td>cât de dispus e kernel-ul să facă swap în loc să elibereze cache (0-100)</td></tr>
+          <tr><td><code>net.ipv4.ip_forward</code></td><td>dacă mașina rutează pachete între interfețe (necesar pentru NAT/router)</td></tr>
+          <tr><td><code>kernel.pid_max</code></td><td>numărul maxim de PID-uri simultane</td></tr>
+          <tr><td><code>fs.file-max</code></td><td>numărul maxim de descriptori de fișier deschiși în tot sistemul</td></tr>
+          <tr><td><code>kernel.panic</code></td><td>secunde până la repornire automată după un kernel panic (0 = nu repornește)</td></tr>
+        </table>
+      </section>
+
+      <section id="depanare">
+        <h2><span class="num">18</span>Depanare și unelte de investigație</h2>
+        <table>
+          <tr><th>Unealtă</th><th>Pentru ce</th></tr>
+          <tr><td><code>dmesg</code></td><td>mesajele kernel-ului (buffer-ul circular <code>printk</code>) — primul loc de verificat la probleme hardware/drivere.</td></tr>
+          <tr><td><code>/proc</code>, <code>/sys</code></td><td>stare live a proceselor și kernel-ului, citibilă ca fișiere text obișnuite.</td></tr>
+          <tr><td><code>strace</code></td><td>urmărește apelurile de sistem pe care le face un proces, în timp real.</td></tr>
+          <tr><td><code>ltrace</code></td><td>ca <code>strace</code>, dar pentru apeluri de bibliotecă.</td></tr>
+          <tr><td><code>perf</code></td><td>profiler la nivel de kernel: counter-e hardware CPU, sampling de stive de apel.</td></tr>
+          <tr><td><code>ftrace</code></td><td>framework intern de tracing al kernel-ului (funcții apelate, latențe, scheduling).</td></tr>
+          <tr><td><code>top</code>/<code>htop</code></td><td>consum CPU/memorie live per proces.</td></tr>
+          <tr><td><code>kdump</code>/<code>crash</code></td><td>captează un "core dump" al memoriei kernel-ului după un panic, pentru analiză ulterioară.</td></tr>
+        </table>
+        <h3>Kernel panic vs. oops</h3>
+        <ul>
+          <li><strong>Oops</strong> — kernel-ul detectează o eroare internă (ex: acces la memorie invalidă) dar reușește să continue, de obicei terminând procesul vinovat; mesajul apare în <code>dmesg</code>.</li>
+          <li><strong>Panic</strong> — o eroare din care kernel-ul nu se mai poate recupera în siguranță (structuri interne corupte); sistemul se oprește complet, afișând ultimul mesaj pe ecran.</li>
+        </ul>
+        <div class="note warn">🩺 Un panic la boot e adesea urma unui driver/modul incompatibil sau a unui parametru de boot greșit — parametrul <code>nomodeset</code> sau boot-area cu un kernel LTS anterior sunt primele lucruri de încercat.</div>
+      </section>
+
+      <section id="avansat">
+        <h2><span class="num">19</span>Subiecte avansate</h2>
+        <h3>Virtualizare — KVM</h3>
+        <p><strong>KVM (Kernel-based Virtual Machine)</strong> transformă kernel-ul Linux însuși într-un hipervizor de tip 1: folosind extensiile de virtualizare ale CPU-ului (Intel VT-x/AMD-V), procesele "invitate" rulează cod aproape nativ. QEMU se ocupă de emularea dispozitivelor virtuale, KVM de execuția CPU/memorie eficientă. Stă la baza majorității cloud-urilor (OpenStack, Proxmox, GCP...).</p>
+        <h3>Kernel real-time — PREEMPT_RT</h3>
+        <p>Kernel-ul standard optimizează pentru <em>throughput</em> mediu, nu pentru latență garantată. Patch-ul <strong>PREEMPT_RT</strong> (parțial integrat deja în mainline) face aproape tot codul kernel-ului întreruptibil, oferind latențe maxime predictibile — esențial pentru robotică, control industrial, audio profesional.</p>
+        <h3>Power management</h3>
+        <p><strong>ACPI</strong> oferă interfața standard prin care kernel-ul interoghează și controlează starea de energie a hardware-ului (baterie, temperatură, stări de sleep S1-S4). <strong>cpufreq</strong> ajustează dinamic frecvența CPU (governors: <code>performance</code>, <code>powersave</code>, <code>ondemand</code>, <code>schedutil</code>) pentru echilibrul putere/consum.</p>
+        <h3>eBPF — programabilitate în kernel</h3>
+        <p>eBPF permite atașarea de mici programe (verificate static pentru siguranță) direct în puncte din kernel — rețea, syscalls, scheduler — fără a scrie și încărca un modul. Stă la baza uneltelor moderne de observabilitate (<code>bpftrace</code>, Cilium) și securitate (Falco).</p>
+      </section>
+
+      <section id="glosar">
+        <h2><span class="num">20</span>Glosar rapid</h2>
+        <table>
+          <tr><td><strong>PID</strong></td><td>Process ID — identificatorul unic al unui proces.</td></tr>
+          <tr><td><strong>ABI</strong></td><td>Application Binary Interface — contractul stabil de apeluri de sistem între kernel și userspace.</td></tr>
+          <tr><td><strong>MMU</strong></td><td>Memory Management Unit — componenta hardware care traduce adrese virtuale în adrese fizice.</td></tr>
+          <tr><td><strong>IRQ</strong></td><td>Interrupt Request — semnal hardware că un dispozitiv are nevoie de atenția CPU.</td></tr>
+          <tr><td><strong>LKM</strong></td><td>Loadable Kernel Module — cod încărcabil/descărcabil dinamic în kernel (<code>.ko</code>).</td></tr>
+          <tr><td><strong>LSM</strong></td><td>Linux Security Module — cadrul pe care se bazează SELinux/AppArmor.</td></tr>
+          <tr><td><strong>cgroup</strong></td><td>Control Group — mecanism de limitare/contorizare a resurselor unui grup de procese.</td></tr>
+          <tr><td><strong>namespace</strong></td><td>mecanism de izolare a vizibilității unei resurse (PID, rețea, montări...) pentru un grup de procese.</td></tr>
+          <tr><td><strong>OOM killer</strong></td><td>mecanismul care termină forțat un proces când memoria e complet epuizată.</td></tr>
+          <tr><td><strong>LTS</strong></td><td>Long Term Support — versiune de kernel întreținută mulți ani.</td></tr>
+        </table>
+        <div class="note">📚 Vrei să sapi și mai adânc? Codul sursă și documentația oficială sunt la <a href="https://kernel.org" target="_blank" rel="noopener">kernel.org</a>, iar cartea liberă <em>"Linux Kernel Development"</em> (Robert Love) și documentația din <code>Documentation/</code> din sursele kernel-ului sunt punctele de plecare clasice.</div>
+      </section>
+
+    </article>
+  </div>
+
+  <footer class="site-footer">
+    <p>Part of <a href="https://github.com/skybytescode/skillbox">SkillBox</a> · Vezi și <a href="os-book/">cursul OS Book</a> și <a href="linux-theory.html">Linux Theory</a> · Testează-te în <a href="./">quiz</a></p>
+  </footer>
+
+  <script>
+    const toc = document.getElementById("toc");
+    const sections = [...document.querySelectorAll("article section")];
+    for (const s of sections) {
+      const h = s.querySelector("h2");
+      const title = h.textContent.replace(/^\d+/, "").trim();
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = "#" + s.id;
+      a.textContent = title;
+      a.dataset.id = s.id;
+      li.appendChild(a);
+      toc.appendChild(li);
+    }
+    const links = new Map([...toc.querySelectorAll("a")].map((a) => [a.dataset.id, a]));
+    const observer = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          links.forEach((a) => a.classList.remove("active"));
+          links.get(e.target.id)?.classList.add("active");
+        }
+      }
+    }, { rootMargin: "-10% 0px -75% 0px" });
+    sections.forEach((s) => observer.observe(s));
+  </script>
+</body>
+</html>
