@@ -97,6 +97,13 @@
     .ch.correct { color: var(--ok); }
     .ch.incorrect { color: var(--bad); background: var(--bad-soft); border-radius: 2px; }
     .ch.cur { background: var(--go); color: #06131a; border-radius: 2px; }
+    .ch.shake { display: inline-block; background: var(--bad); color: #2a0a0e; border-radius: 2px; animation: shake .28s; }
+    @keyframes shake {
+      10%, 90% { transform: translateX(-1px); }
+      20%, 80% { transform: translateX(2px); }
+      30%, 50%, 70% { transform: translateX(-3px); }
+      40%, 60% { transform: translateX(3px); }
+    }
     .hidden-input {
       position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;
       top: 0; left: 0;
@@ -872,7 +879,7 @@ func main() {
       let html = '';
       for (let i = 0; i < target.length; i++) {
         const ch = target[i];
-        const display = ch === '\n' ? '⏎\n' : ch;
+        const display = ch === '\n' ? '⏎\n' : (ch === ' ' ? '·' : ch);
         let cls = 'ch pending';
         if (i < prevLen) {
           cls = 'ch ' + (typedIsCorrect[i] ? 'correct' : 'incorrect');
@@ -949,27 +956,55 @@ func main() {
     function handleInput() {
       if (finished) { els.input.value = target.slice(0, prevLen); return; }
 
-      let val = els.input.value;
-      if (val.length > target.length) val = val.slice(0, target.length);
+      const val = els.input.value;
 
       if (startTime === null && val.length > 0) {
         startTime = Date.now();
         startTicking();
       }
 
+      let rejected = false;
+
       if (val.length > prevLen) {
-        for (let i = prevLen; i < val.length; i++) {
+        // Validate newly typed characters one at a time, in order. A wrong
+        // character is never accepted into the buffer, so the confirmed
+        // prefix can never drift out of alignment with the target text.
+        const added = val.slice(prevLen);
+        for (let k = 0; k < added.length; k++) {
+          if (prevLen >= target.length) break;
           totalKeys++;
-          const ok = val[i] === target[i];
-          typedIsCorrect[i] = ok;
-          if (ok) correctChars++; else errorChars++;
+          const ok = added[k] === target[prevLen];
+          typedIsCorrect[prevLen] = ok;
+          if (ok) {
+            correctChars++;
+            prevLen++;
+          } else {
+            errorChars++;
+            rejected = true;
+            break;
+          }
         }
+      } else {
+        // Backspace: move back, but the mistake already recorded still
+        // counts toward accuracy, same as a real typing test.
+        prevLen = val.length;
       }
-      prevLen = val.length;
-      els.input.value = val;
+
+      // Buffer always mirrors the confirmed-correct prefix — this is what
+      // prevents a missed/extra character from silently misaligning
+      // everything typed afterwards.
+      els.input.value = target.slice(0, prevLen);
 
       renderStage();
       const stats = updateStats();
+
+      if (rejected) {
+        const curSpan = els.stage.querySelector('.ch.cur');
+        if (curSpan) {
+          curSpan.classList.add('shake');
+          setTimeout(() => curSpan.classList.remove('shake'), 280);
+        }
+      }
 
       if (prevLen >= target.length) {
         finishLevel(stats);
