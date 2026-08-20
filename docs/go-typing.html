@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Go Typing Trainer · Learn Go by Typing It · SkillBox</title>
+  <style>
+    :root {
+      --bg: #0f1420; --panel: #171e2e; --panel-2: #1f293d;
+      --text: #e6ecf5; --muted: #93a1bd; --border: #2a3550; --radius: 14px;
+      --go: #00ADD8; --go-soft: #0f2b35; --go-text: #8fe3f7;
+      --ok: #2ee6a6; --ok-soft: #123227;
+      --bad: #ff5d6c; --bad-soft: #3a1420;
+      --gold: #ffcf5c; --silver: #c7d2e6; --bronze: #d99a5c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -200px, #12283a 0%, var(--bg) 60%);
+      color: var(--text); line-height: 1.55; min-height: 100vh;
+    }
+    a { color: var(--go); }
+    code {
+      font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+      color: var(--go-text); background: #0d1320; padding: 2px 6px;
+      border-radius: 5px; border: 1px solid var(--border); font-size: .88em;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+    .site-header { padding: 40px 0 10px; text-align: center; }
+    .site-header h1 { margin: 0; font-size: 1.9rem; letter-spacing: -0.5px; }
+    .site-header h1 .g { color: var(--go); }
+    .tagline { color: var(--muted); margin: 8px 0 0; }
+    .nav { margin-top: 12px; font-size: .9rem; }
+    .nav a { text-decoration: none; margin: 0 6px; color: var(--muted); }
+    .nav a:hover { text-decoration: underline; color: var(--text); }
+
+    main { padding-bottom: 50px; }
+
+    /* Level grid */
+    section.block { margin: 30px 0; }
+    .block h2 { font-size: 1.2rem; margin: 0 0 4px; }
+    .block .lede { color: var(--muted); font-size: .88rem; margin: 0 0 14px; max-width: 70ch; }
+
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .toggle { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--muted); cursor: pointer; user-select: none; }
+    .toggle input { accent-color: var(--go); width: 16px; height: 16px; }
+    .resetlink { font-size: .8rem; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; }
+    .resetlink:hover { color: var(--bad); }
+
+    .level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+    .level-card {
+      background: var(--panel); border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 12px 14px; cursor: pointer; text-align: left; color: var(--text);
+      transition: border-color .12s ease, transform .05s ease; position: relative;
+    }
+    .level-card:hover { border-color: var(--go); }
+    .level-card:active { transform: translateY(1px); }
+    .level-card.active { border-color: var(--go); background: var(--go-soft); box-shadow: 0 0 0 1px var(--go); }
+    .level-card.locked { opacity: .45; cursor: not-allowed; }
+    .level-card .num { font-size: .7rem; color: var(--muted); font-weight: 700; letter-spacing: .4px; }
+    .level-card .title { font-size: .88rem; font-weight: 600; margin: 4px 0 2px; }
+    .level-card .best { font-size: .72rem; color: var(--muted); }
+    .level-card .tier { position: absolute; top: 10px; right: 10px; font-size: .95rem; }
+    .level-card .lock { position: absolute; top: 10px; right: 10px; font-size: .85rem; color: var(--muted); }
+
+    /* Active level panel */
+    .panel {
+      background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 22px 24px; margin-top: 18px;
+    }
+    .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .panel-head h3 { margin: 0 0 4px; font-size: 1.15rem; }
+    .kicker { display: inline-block; font-size: .68rem; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; color: var(--go-text); background: var(--go-soft); border: 1px solid var(--go); border-radius: 999px; padding: 2px 9px; margin-bottom: 8px; }
+    .panel-head p.blurb { color: var(--muted); font-size: .88rem; margin: 4px 0 0; max-width: 60ch; }
+    .doclink { font-size: .8rem; white-space: nowrap; text-decoration: none; color: var(--go-text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; }
+    .doclink:hover { border-color: var(--go); }
+
+    /* Stats */
+    .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0; }
+    .stat { background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; text-align: center; }
+    .stat .val { font-size: 1.3rem; font-weight: 700; color: var(--go-text); }
+    .stat .lbl { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
+
+    /* Code stage */
+    .stage-wrap { position: relative; }
+    .code-stage {
+      background: #0d1320; border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 18px 20px; font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+      font-size: .92rem; line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+      max-height: 420px; overflow-y: auto; cursor: text;
+    }
+    .code-stage:focus-within, .code-stage.focused { border-color: var(--go); }
+    .ch { white-space: pre; }
+    .ch.pending { color: #4a5875; }
+    .ch.correct { color: var(--ok); }
+    .ch.incorrect { color: var(--bad); background: var(--bad-soft); border-radius: 2px; }
+    .ch.cur { background: var(--go); color: #06131a; border-radius: 2px; }
+    .hidden-input {
+      position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;
+      top: 0; left: 0;
+    }
+    .focus-hint {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      background: rgba(13, 19, 32, .82); border-radius: 12px; font-size: .95rem; color: var(--muted);
+      cursor: text; backdrop-filter: blur(1px);
+    }
+    .focus-hint span { background: var(--panel-2); border: 1px solid var(--border); padding: 8px 16px; border-radius: 999px; }
+    .code-stage.focused + .focus-hint { display: none; }
+
+    .stage-actions { display: flex; gap: 10px; margin-top: 14px; }
+    .btn {
+      border: none; border-radius: 10px; padding: 10px 18px; font-size: .9rem; font-weight: 600;
+      cursor: pointer; transition: transform .05s ease, filter .15s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: linear-gradient(135deg, var(--go), #4fd1e8); color: #052229; }
+    .btn.primary:disabled { opacity: .4; cursor: not-allowed; filter: grayscale(.4); }
+    .btn.ghost { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+    .btn:hover:not(:disabled) { filter: brightness(1.08); }
+
+    /* Completion panel */
+    .complete {
+      margin-top: 18px; padding: 20px 22px; border-radius: 12px; border: 1.5px solid var(--ok);
+      background: var(--ok-soft); display: none;
+    }
+    .complete.show { display: block; }
+    .complete h4 { margin: 0 0 6px; font-size: 1.05rem; color: var(--ok); }
+    .complete .tierline { font-size: .9rem; color: var(--muted); margin-bottom: 12px; }
+    .complete .tierline b { color: var(--text); }
+
+    .callout {
+      background: var(--panel); border-left: 3px solid var(--go); border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 16px 20px; font-size: .88rem; margin: 24px 0;
+    }
+
+    .site-footer { text-align: center; padding: 24px 0 40px; color: var(--muted); font-size: .82rem; }
+    .site-footer a { text-decoration: none; }
+
+    @media (max-width: 640px) {
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .panel { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>⌨️ <span class="g">Go</span> Typing Trainer</h1>
+      <p class="tagline">Build typing speed and muscle memory for Go — one official-docs concept per level.</p>
+      <p class="nav"><a href="index.html">🚀 SkillBox Home</a> · <a href="linux-theory.html">📖 Linux Theory</a> · <a href="kernel.html">🧠 Kernel Guide</a> · <a href="files.html">🗂️ File Systems</a></p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="block">
+      <h2>Levels</h2>
+      <p class="lede">18 levels, each built around a real topic from the official Go documentation — variables and types, strings, arrays, slices, maps, structs, interfaces, error handling, goroutines, channels, generics and more. Finish a level to unlock the next.</p>
+      <div class="toolbar">
+        <label class="toggle"><input type="checkbox" id="practiceToggle" /> Practice mode — unlock all levels</label>
+        <button class="resetlink" id="resetProgress">Reset progress</button>
+      </div>
+      <div class="level-grid" id="levelGrid"></div>
+    </section>
+
+    <section class="panel" id="levelPanel">
+      <div class="panel-head">
+        <div>
+          <span class="kicker" id="levelTag">Basics</span>
+          <h3 id="levelTitle">Loading…</h3>
+          <p class="blurb" id="levelBlurb"></p>
+        </div>
+        <a class="doclink" id="levelDoc" href="#" target="_blank" rel="noopener">📘 Official docs ↗</a>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat"><div class="val" id="statWpm">0</div><div class="lbl">WPM</div></div>
+        <div class="stat"><div class="val" id="statAcc">100%</div><div class="lbl">Accuracy</div></div>
+        <div class="stat"><div class="val" id="statTime">0.0s</div><div class="lbl">Time</div></div>
+        <div class="stat"><div class="val" id="statProg">0%</div><div class="lbl">Progress</div></div>
+      </div>
+
+      <div class="stage-wrap">
+        <div class="code-stage" id="codeStage" tabindex="0"></div>
+        <div class="focus-hint" id="focusHint"><span>Click here and start typing ⌨️</span></div>
+        <textarea class="hidden-input" id="hiddenInput" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
+      </div>
+
+      <div class="stage-actions">
+        <button class="btn ghost" id="restartBtn">↺ Restart level</button>
+        <button class="btn primary" id="nextBtn" disabled>Next level →</button>
+      </div>
+
+      <div class="complete" id="completePanel">
+        <h4 id="completeTitle">🎉 Level complete!</h4>
+        <p class="tierline" id="completeStats"></p>
+      </div>
+    </section>
+
+    <div class="callout">
+      💡 <b>How it works:</b> the target code is dimmed ahead of your cursor, green behind it. Backspace works normally, but a mistake still counts against your accuracy even after you fix it — just like a real typing test. Your best WPM and accuracy per level are saved locally in your browser.
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Part of SkillBox · <a href="https://github.com/skybytescode/skillbox">Open source on GitHub</a></p>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+
+    const LEVELS = [
+      {
+        tag: 'Basics', title: 'Packages & Hello World',
+        blurb: 'Every Go file belongs to a package; main.main is the program entry point.',
+        doc: 'https://go.dev/tour/basics/1',
+        code: `package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, 世界")
+    fmt.Println("Go makes it easy to build simple, reliable software.")
+}`
+      },
+      {
+        tag: 'Basics', title: 'Variables, Constants & iota',
+        blurb: 'var, short declaration :=, const blocks, and the iota enumerator.',
+        doc: 'https://go.dev/tour/basics/8',
+        code: `package main
+
+import "fmt"
+
+const (
+    Sunday = iota
+    Monday
+    Tuesday
+    Wednesday
+)
+
+func main() {
+    var name string = "Gopher"
+    age := 15
+    const Pi = 3.14159
+
+    var isReady bool
+    isReady = true
+
+    fmt.Println(name, age, Pi, isReady)
+    fmt.Println("Wednesday index:", Wednesday)
+}`
+      },
+      {
+        tag: 'Basics', title: 'Basic Types & Conversion',
+        blurb: 'Numeric types, explicit conversions, and integer division vs modulo.',
+        doc: 'https://go.dev/tour/basics/11',
+        code: `package main
+
+import "fmt"
+
+func main() {
+    var i int = 42
+    var f float64 = float64(i) / 3
+    var u uint8 = 255
+    var b byte = 'A'
+
+    s := fmt.Sprintf("%d %.2f %d %c", i, f, u, b)
+    fmt.Println(s)
+
+    x, y := 7, 3
+    fmt.Println("div:", x/y, "mod:", x%y)
+}`
+      },
+      {
+        tag: 'Strings', title: 'Strings & Runes',
+        blurb: 'UTF-8 strings, the strings package, ranging over runes, and strings.Builder.',
+        doc: 'https://pkg.go.dev/strings',
+        code: `package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    s := "Hello, Gophers!"
+
+    fmt.Println(strings.ToUpper(s))
+    fmt.Println(strings.Contains(s, "Gopher"))
+    fmt.Println(strings.Split(s, ", "))
+
+    for i, r := range s {
+        if r == 'G' {
+            fmt.Println("found G at byte", i)
+        }
+    }
+
+    var b strings.Builder
+    b.WriteString("built ")
+    b.WriteString("efficiently")
+    fmt.Println(b.String())
+}`
+      },
+      {
+        tag: 'Arrays', title: 'Arrays',
+        blurb: 'Fixed-size arrays, zero values, and array literals with [...]​.',
+        doc: 'https://go.dev/tour/moretypes/6',
+        code: `package main
+
+import "fmt"
+
+func main() {
+    var nums [5]int
+    nums[0] = 10
+    nums[4] = 50
+
+    days := [...]string{"Mon", "Tue", "Wed"}
+
+    sum := 0
+    for _, n := range nums {
+        sum += n
+    }
+
+    fmt.Println(nums, len(nums))
+    fmt.Println(days, len(days))
+    fmt.Println("sum:", sum)
+}`
+      },
+      {
+        tag: 'Slices', title: 'Slices',
+        blurb: 'make, append, slicing expressions, and copy — the workhorse of Go collections.',
+        doc: 'https://go.dev/tour/moretypes/7',
+        code: `package main
+
+import "fmt"
+
+func main() {
+    nums := make([]int, 0, 10)
+    nums = append(nums, 1, 2, 3, 4, 5)
+
+    middle := nums[1:4]
+    fmt.Println(middle, len(middle), cap(middle))
+
+    dst := make([]int, len(nums))
+    copy(dst, nums)
+    dst[0] = 99
+
+    fmt.Println(nums)
+    fmt.Println(dst)
+}`
+      },
+      {
+        tag: 'Maps', title: 'Maps',
+        blurb: 'map literals, the comma-ok idiom, delete, and iterating with range.',
+        doc: 'https://go.dev/tour/moretypes/19',
+        code: `package main
+
+import "fmt"
+
+func main() {
+    ages := map[string]int{
+        "alice": 30,
+        "bob":   25,
+    }
+
+    ages["carol"] = 28
+
+    if age, ok := ages["bob"]; ok {
+        fmt.Println("bob is", age)
+    }
+
+    delete(ages, "alice")
+
+    for name, age := range ages {
+        fmt.Println(name, "->", age)
+    }
+}`
+      },
+      {
+        tag: 'Structs', title: 'Structs',
+        blurb: 'Struct types, field literals, and nested struct access.',
+        doc: 'https://go.dev/tour/moretypes/2',
+        code: `package main
+
+import "fmt"
+
+type Point struct {
+    X, Y int
+}
+
+type Circle struct {
+    Center Point
+    Radius float64
+}
+
+func main() {
+    p := Point{X: 3, Y: 4}
+    c := Circle{Center: p, Radius: 2.5}
+
+    c.Center.X = 10
+
+    fmt.Printf("%+v\\n", c)
+}`
+      },
+      {
+        tag: 'Pointers', title: 'Pointers',
+        blurb: 'The & and * operators, and passing pointers to mutate values in place.',
+        doc: 'https://go.dev/tour/moretypes/1',
+        code: `package main
+
+import "fmt"
+
+func increment(n *int) {
+    *n++
+}
+
+func main() {
+    value := 10
+    ptr := &value
+
+    increment(ptr)
+    fmt.Println("value:", value)
+    fmt.Println("ptr points to:", *ptr)
+
+    var nilPtr *int
+    fmt.Println("nilPtr == nil:", nilPtr == nil)
+}`
+      },
+      {
+        tag: 'Functions', title: 'Multi-return, Variadic & Closures',
+        blurb: 'Functions can return multiple values, take variadic args, and capture state as closures.',
+        doc: 'https://go.dev/tour/moretypes/25',
+        code: `package main
+
+import "fmt"
+
+func divide(a, b int) (int, error) {
+    if b == 0 {
+        return 0, fmt.Errorf("division by zero")
+    }
+    return a / b, nil
+}
+
+func sum(nums ...int) int {
+    total := 0
+    for _, n := range nums {
+        total += n
+    }
+    return total
+}
+
+func counter() func() int {
+    count := 0
+    return func() int {
+        count++
+        return count
+    }
+}
+
+func main() {
+    result, err := divide(10, 2)
+    fmt.Println(result, err)
+
+    fmt.Println(sum(1, 2, 3, 4))
+
+    next := counter()
+    fmt.Println(next(), next(), next())
+}`
+      },
+      {
+        tag: 'Interfaces', title: 'Methods & Interfaces',
+        blurb: 'Value receivers, interface satisfaction, and polymorphism without inheritance.',
+        doc: 'https://go.dev/tour/methods/9',
+        code: `package main
+
+import "fmt"
+
+type Shape interface {
+    Area() float64
+}
+
+type Rectangle struct {
+    Width, Height float64
+}
+
+func (r Rectangle) Area() float64 {
+    return r.Width * r.Height
+}
+
+type Circle struct {
+    Radius float64
+}
+
+func (c Circle) Area() float64 {
+    return 3.14159 * c.Radius * c.Radius
+}
+
+func describe(s Shape) {
+    fmt.Printf("area: %.2f\\n", s.Area())
+}
+
+func main() {
+    shapes := []Shape{
+        Rectangle{Width: 3, Height: 4},
+        Circle{Radius: 2},
+    }
+
+    for _, s := range shapes {
+        describe(s)
+    }
+}`
+      },
+      {
+        tag: 'Errors', title: 'Error Handling',
+        blurb: 'Sentinel errors, custom error types, wrapping with %w, errors.Is and errors.As.',
+        doc: 'https://go.dev/blog/go1.13-errors',
+        code: `package main
+
+import (
+    "errors"
+    "fmt"
+)
+
+var ErrNotFound = errors.New("item not found")
+
+type ValidationError struct {
+    Field string
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("invalid field: %s", e.Field)
+}
+
+func find(id int) error {
+    if id < 0 {
+        return &ValidationError{Field: "id"}
+    }
+    if id == 0 {
+        return fmt.Errorf("lookup failed: %w", ErrNotFound)
+    }
+    return nil
+}
+
+func main() {
+    err := find(0)
+
+    if errors.Is(err, ErrNotFound) {
+        fmt.Println("not found:", err)
+    }
+
+    var verr *ValidationError
+    if errors.As(find(-1), &verr) {
+        fmt.Println("validation failed on", verr.Field)
+    }
+}`
+      },
+      {
+        tag: 'Control flow', title: 'defer, panic & recover',
+        blurb: 'defer runs LIFO on function exit; recover inside a deferred func stops a panic.',
+        doc: 'https://go.dev/blog/defer-panic-and-recover',
+        code: `package main
+
+import "fmt"
+
+func safeDivide(a, b int) (result int) {
+    defer func() {
+        if r := recover(); r != nil {
+            fmt.Println("recovered from:", r)
+            result = 0
+        }
+    }()
+
+    result = a / b
+    return result
+}
+
+func main() {
+    defer fmt.Println("main is done")
+
+    fmt.Println(safeDivide(10, 2))
+    fmt.Println(safeDivide(10, 0))
+
+    for i := 0; i < 3; i++ {
+        defer fmt.Println("deferred:", i)
+    }
+}`
+      },
+      {
+        tag: 'Concurrency', title: 'Goroutines',
+        blurb: 'The go keyword starts a goroutine; sync.WaitGroup waits for a set of them to finish.',
+        doc: 'https://go.dev/tour/concurrency/1',
+        code: `package main
+
+import (
+    "fmt"
+    "sync"
+)
+
+func worker(id int, wg *sync.WaitGroup) {
+    defer wg.Done()
+    fmt.Printf("worker %d starting\\n", id)
+    fmt.Printf("worker %d done\\n", id)
+}
+
+func main() {
+    var wg sync.WaitGroup
+
+    for i := 1; i <= 5; i++ {
+        wg.Add(1)
+        go worker(i, &wg)
+    }
+
+    wg.Wait()
+    fmt.Println("all workers finished")
+}`
+      },
+      {
+        tag: 'Concurrency', title: 'Channels',
+        blurb: 'Buffered and unbuffered channels, directional channel types, and range over a channel.',
+        doc: 'https://go.dev/tour/concurrency/2',
+        code: `package main
+
+import "fmt"
+
+func producer(ch chan<- int, count int) {
+    for i := 0; i < count; i++ {
+        ch <- i * i
+    }
+    close(ch)
+}
+
+func main() {
+    ch := make(chan int, 3)
+
+    go producer(ch, 5)
+
+    for square := range ch {
+        fmt.Println("received:", square)
+    }
+
+    done := make(chan bool)
+    go func() {
+        fmt.Println("working...")
+        done <- true
+    }()
+    <-done
+}`
+      },
+      {
+        tag: 'Concurrency', title: 'select & sync.Mutex',
+        blurb: 'Guard shared state with a Mutex, and wait on multiple channels with select.',
+        doc: 'https://go.dev/tour/concurrency/5',
+        code: `package main
+
+import (
+    "fmt"
+    "sync"
+    "time"
+)
+
+type Counter struct {
+    mu    sync.Mutex
+    value int
+}
+
+func (c *Counter) Inc() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.value++
+}
+
+func main() {
+    c := Counter{}
+    var wg sync.WaitGroup
+
+    for i := 0; i < 100; i++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            c.Inc()
+        }()
+    }
+    wg.Wait()
+    fmt.Println("counter:", c.value)
+
+    ch1 := make(chan string)
+    ch2 := make(chan string)
+
+    go func() { time.Sleep(time.Millisecond); ch1 <- "one" }()
+    go func() { time.Sleep(time.Millisecond); ch2 <- "two" }()
+
+    for i := 0; i < 2; i++ {
+        select {
+        case msg1 := <-ch1:
+            fmt.Println(msg1)
+        case msg2 := <-ch2:
+            fmt.Println(msg2)
+        }
+    }
+}`
+      },
+      {
+        tag: 'Generics', title: 'Generics',
+        blurb: 'Type parameters, constraint interfaces, and a generic Stack[T].',
+        doc: 'https://go.dev/doc/tutorial/generics',
+        code: `package main
+
+import "fmt"
+
+type Number interface {
+    int | int64 | float64
+}
+
+func Sum[T Number](nums []T) T {
+    var total T
+    for _, n := range nums {
+        total += n
+    }
+    return total
+}
+
+type Stack[T any] struct {
+    items []T
+}
+
+func (s *Stack[T]) Push(item T) {
+    s.items = append(s.items, item)
+}
+
+func (s *Stack[T]) Pop() (T, bool) {
+    var zero T
+    if len(s.items) == 0 {
+        return zero, false
+    }
+    item := s.items[len(s.items)-1]
+    s.items = s.items[:len(s.items)-1]
+    return item, true
+}
+
+func main() {
+    fmt.Println(Sum([]int{1, 2, 3}))
+    fmt.Println(Sum([]float64{1.5, 2.5}))
+
+    s := Stack[string]{}
+    s.Push("go")
+    s.Push("rust")
+    top, _ := s.Pop()
+    fmt.Println(top)
+}`
+      },
+      {
+        tag: 'Concurrency', title: 'context package',
+        blurb: 'Cancellation and timeouts propagated through a call chain via context.Context.',
+        doc: 'https://pkg.go.dev/context',
+        code: `package main
+
+import (
+    "context"
+    "fmt"
+    "time"
+)
+
+func worker(ctx context.Context, id int) {
+    select {
+    case <-time.After(2 * time.Second):
+        fmt.Printf("worker %d finished\\n", id)
+    case <-ctx.Done():
+        fmt.Printf("worker %d cancelled: %v\\n", id, ctx.Err())
+    }
+}
+
+func main() {
+    ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+    defer cancel()
+
+    go worker(ctx, 1)
+
+    <-ctx.Done()
+    fmt.Println("context done:", ctx.Err())
+}`
+      }
+    ];
+
+    const STORAGE_KEY = 'goTypingProgress_v1';
+    const PRACTICE_KEY = 'goTypingPracticeMode';
+
+    const els = {
+      grid: document.getElementById('levelGrid'),
+      practiceToggle: document.getElementById('practiceToggle'),
+      resetProgress: document.getElementById('resetProgress'),
+      levelTag: document.getElementById('levelTag'),
+      levelTitle: document.getElementById('levelTitle'),
+      levelBlurb: document.getElementById('levelBlurb'),
+      levelDoc: document.getElementById('levelDoc'),
+      statWpm: document.getElementById('statWpm'),
+      statAcc: document.getElementById('statAcc'),
+      statTime: document.getElementById('statTime'),
+      statProg: document.getElementById('statProg'),
+      stage: document.getElementById('codeStage'),
+      focusHint: document.getElementById('focusHint'),
+      input: document.getElementById('hiddenInput'),
+      restartBtn: document.getElementById('restartBtn'),
+      nextBtn: document.getElementById('nextBtn'),
+      complete: document.getElementById('completePanel'),
+      completeStats: document.getElementById('completeStats')
+    };
+
+    function loadProgress() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+      catch (e) { return {}; }
+    }
+    function saveProgress(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }
+
+    let progress = loadProgress();
+    let practiceMode = localStorage.getItem(PRACTICE_KEY) === '1';
+    els.practiceToggle.checked = practiceMode;
+
+    let levelIdx = 0;
+    let target = '';
+    let prevLen = 0;
+    let correctChars = 0;
+    let errorChars = 0;
+    let totalKeys = 0;
+    let startTime = null;
+    let finished = false;
+    let tickTimer = null;
+
+    function isUnlocked(i) {
+      if (i === 0 || practiceMode) return true;
+      return !!(progress[i - 1] && progress[i - 1].completed);
+    }
+
+    function firstIncompleteLevel() {
+      for (let i = 0; i < LEVELS.length; i++) {
+        if (!progress[i] || !progress[i].completed) return i;
+      }
+      return LEVELS.length - 1;
+    }
+
+    function tierIcon(tier) {
+      if (tier === 'gold') return '🥇';
+      if (tier === 'silver') return '🥈';
+      if (tier === 'bronze') return '🥉';
+      return '';
+    }
+
+    function renderGrid() {
+      els.grid.innerHTML = '';
+      LEVELS.forEach((lv, i) => {
+        const unlocked = isUnlocked(i);
+        const card = document.createElement('button');
+        card.className = 'level-card' + (i === levelIdx ? ' active' : '') + (unlocked ? '' : ' locked');
+        card.disabled = !unlocked;
+        const rec = progress[i];
+        card.innerHTML =
+          '<div class="num">LEVEL ' + (i + 1) + '</div>' +
+          '<div class="title">' + lv.title + '</div>' +
+          '<div class="best">' + (rec ? rec.bestWpm + ' wpm · ' + rec.bestAcc + '%' : '—') + '</div>' +
+          (unlocked
+            ? (rec && rec.tier ? '<div class="tier">' + tierIcon(rec.tier) + '</div>' : '')
+            : '<div class="lock">🔒</div>');
+        card.addEventListener('click', () => { if (unlocked) loadLevel(i); });
+        els.grid.appendChild(card);
+      });
+    }
+
+    function renderStage() {
+      let html = '';
+      for (let i = 0; i < target.length; i++) {
+        const ch = target[i];
+        const display = ch === '\n' ? '⏎\n' : ch;
+        let cls = 'ch pending';
+        if (i < prevLen) {
+          cls = 'ch ' + (typedIsCorrect[i] ? 'correct' : 'incorrect');
+        } else if (i === prevLen) {
+          cls = 'ch cur';
+        }
+        html += '<span class="' + cls + '">' + escapeHtml(display) + '</span>';
+      }
+      els.stage.innerHTML = html;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    let typedIsCorrect = [];
+
+    function loadLevel(i) {
+      levelIdx = i;
+      const lv = LEVELS[i];
+      target = lv.code;
+      prevLen = 0;
+      correctChars = 0;
+      errorChars = 0;
+      totalKeys = 0;
+      startTime = null;
+      finished = false;
+      typedIsCorrect = new Array(target.length).fill(false);
+
+      els.levelTag.textContent = lv.tag;
+      els.levelTitle.textContent = 'Level ' + (i + 1) + ' — ' + lv.title;
+      els.levelBlurb.textContent = lv.blurb;
+      els.levelDoc.href = lv.doc;
+
+      els.input.value = '';
+      els.input.maxLength = target.length;
+      els.nextBtn.disabled = true;
+      els.complete.classList.remove('show');
+      els.stage.classList.remove('focused');
+
+      updateStats();
+      renderStage();
+      renderGrid();
+      stopTicking();
+    }
+
+    function updateStats() {
+      const wpm = computeWpm();
+      const acc = totalKeys === 0 ? 100 : Math.round((correctChars / totalKeys) * 100);
+      const secs = startTime ? (Date.now() - startTime) / 1000 : 0;
+      const prog = Math.round((prevLen / target.length) * 100);
+      els.statWpm.textContent = wpm;
+      els.statAcc.textContent = acc + '%';
+      els.statTime.textContent = secs.toFixed(1) + 's';
+      els.statProg.textContent = prog + '%';
+      return { wpm, acc };
+    }
+
+    function computeWpm() {
+      if (!startTime) return 0;
+      const minutes = (Date.now() - startTime) / 60000;
+      if (minutes <= 0) return 0;
+      return Math.max(0, Math.round((correctChars / 5) / minutes));
+    }
+
+    function startTicking() {
+      stopTicking();
+      tickTimer = setInterval(updateStats, 200);
+    }
+    function stopTicking() {
+      if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+    }
+
+    function handleInput() {
+      if (finished) { els.input.value = target.slice(0, prevLen); return; }
+
+      let val = els.input.value;
+      if (val.length > target.length) val = val.slice(0, target.length);
+
+      if (startTime === null && val.length > 0) {
+        startTime = Date.now();
+        startTicking();
+      }
+
+      if (val.length > prevLen) {
+        for (let i = prevLen; i < val.length; i++) {
+          totalKeys++;
+          const ok = val[i] === target[i];
+          typedIsCorrect[i] = ok;
+          if (ok) correctChars++; else errorChars++;
+        }
+      }
+      prevLen = val.length;
+      els.input.value = val;
+
+      renderStage();
+      const stats = updateStats();
+
+      if (prevLen >= target.length) {
+        finishLevel(stats);
+      }
+    }
+
+    function finishLevel(stats) {
+      finished = true;
+      stopTicking();
+      updateStats();
+
+      const wpm = computeWpm();
+      const acc = totalKeys === 0 ? 100 : Math.round((correctChars / totalKeys) * 100);
+      let tier = 'bronze';
+      if (wpm >= 35 && acc >= 97) tier = 'gold';
+      else if (wpm >= 20 && acc >= 92) tier = 'silver';
+
+      const rec = progress[levelIdx] || { bestWpm: 0, bestAcc: 0, tier: 'bronze', completed: false };
+      const improved = wpm > rec.bestWpm;
+      progress[levelIdx] = {
+        completed: true,
+        bestWpm: Math.max(rec.bestWpm, wpm),
+        bestAcc: Math.max(rec.bestAcc, acc),
+        tier: rankTier(rec.tier, tier)
+      };
+      saveProgress(progress);
+
+      els.completeStats.innerHTML =
+        tierIcon(progress[levelIdx].tier) + ' <b>' + wpm + ' WPM</b> at <b>' + acc + '%</b> accuracy' +
+        (improved ? ' — new best!' : ' (best: ' + progress[levelIdx].bestWpm + ' wpm)');
+      els.complete.classList.add('show');
+
+      const hasNext = levelIdx < LEVELS.length - 1;
+      els.nextBtn.disabled = !hasNext;
+      renderGrid();
+    }
+
+    function rankTier(a, b) {
+      const order = { bronze: 1, silver: 2, gold: 3 };
+      return order[b] > order[a] ? b : a;
+    }
+
+    els.stage.addEventListener('click', () => els.input.focus());
+    els.focusHint.addEventListener('click', () => els.input.focus());
+    els.input.addEventListener('focus', () => els.stage.classList.add('focused'));
+    els.input.addEventListener('blur', () => els.stage.classList.remove('focused'));
+    els.input.addEventListener('input', handleInput);
+    els.input.addEventListener('paste', (e) => e.preventDefault());
+
+    els.restartBtn.addEventListener('click', () => loadLevel(levelIdx));
+    els.nextBtn.addEventListener('click', () => {
+      if (levelIdx < LEVELS.length - 1) loadLevel(levelIdx + 1);
+    });
+
+    els.practiceToggle.addEventListener('change', () => {
+      practiceMode = els.practiceToggle.checked;
+      localStorage.setItem(PRACTICE_KEY, practiceMode ? '1' : '0');
+      renderGrid();
+    });
+
+    els.resetProgress.addEventListener('click', () => {
+      if (!confirm('Reset all Go Typing Trainer progress? This cannot be undone.')) return;
+      progress = {};
+      saveProgress(progress);
+      loadLevel(0);
+    });
+
+    loadLevel(firstIncompleteLevel());
+  })();
+  </script>
+</body>
+</html>
